@@ -24,7 +24,37 @@ export default function Admin() {
             <option>Inner Circle</option>
             <option>Shorting</option>
             <option>CB Course</option>
+            <option>Free + Shorting</option>
+            <option>Inner Circle + CB Course</option>
+            <option>All Tiers</option>
           </select>
+        </div>
+        <div className="mt-4">
+          <h2 className="text-xl font-bold">Manage Content</h2>
+          <div className="mt-2">
+            <label className="block">Select Tab</label>
+            <select className="p-2 border rounded">
+              <option>Live Stream Alerts</option>
+              <option>Crypto Market</option>
+              <option>Videos</option>
+              <option>Posts</option>
+              <option>Wallet Alerts</option>
+              <option>Shorting</option>
+              <option>CB Course</option>
+            </select>
+          </div>
+          <div className="mt-2">
+            <input type="text" placeholder="Title" className="p-2 border rounded w-full" />
+            <textarea placeholder="Content" className="p-2 border rounded w-full mt-2" />
+            <input type="text" placeholder="YouTube URL (for Videos/Shorting/CB Course)" className="p-2 border rounded w-full mt-2" />
+            <div className="mt-2">
+              <label className="inline-flex items-center">
+                <input type="checkbox" className="mr-2" />
+                Trigger Alert
+              </label>
+            </div>
+            <button className="mt-2 p-2 bg-green-500 text-white rounded">Post</button>
+          </div>
         </div>
       </div>
     );
