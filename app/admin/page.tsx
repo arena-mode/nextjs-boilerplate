@@ -241,3 +241,13 @@ export default function Admin() {
     </div>
   );
 }
+<button 
+  onClick={() => {
+    if(confirm('Are you sure you want to log out?')) {
+      setIsAuthenticated(false);
+    }
+  }}
+  className="mt-8 p-2 bg-gray-700 text-white rounded w-full"
+>
+  Logout
+</button>
