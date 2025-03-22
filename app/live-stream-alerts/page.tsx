@@ -24,7 +24,8 @@ export default function LiveStreamAlerts() {
         // Get ALL content with no filter to see what's actually in the database
         const { data, error } = await supabase
           .from('content')
-          .select('*');
+          .select('*')
+          .eq('tab', 'live-stream-alerts');
         
         setDebug(prev => ({...prev, step3: "Query completed", dataLength: data?.length, error: error?.message, allData: data}));
 
@@ -75,7 +76,9 @@ export default function LiveStreamAlerts() {
               {item.media_url && item.media_url.includes('youtube.com') && (
                 <div className="mt-4 aspect-video">
                   <iframe 
-                    src={item.media_url.replace('watch?v=', 'embed/')} 
+                    src={item.media_url && item.media_url.includes('youtube.com') ? 
+                      item.media_url.replace('youtube.com/watch?v=', 'youtube.com/embed/') : 
+                      item.media_url}
                     className="w-full h-full"
                     allowFullScreen
                     title={item.title}
