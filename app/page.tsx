@@ -1,13 +1,12 @@
-export default function Home() {
+export default function Videos() {
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold">Welcome to Crypto Bellwether</h1>
+      <h1 className="text-2xl font-bold">Videos</h1>
       <div className="mt-4">
-        <h2 className="text-xl font-bold">Chatbot</h2>
-        <div className="mt-2">
-          <input type="text" placeholder="Ask a question..." className="p-2 border rounded w-full" />
-          <button className="mt-2 p-2 bg-blue-500 text-white rounded">Send</button>
-          <p className="mt-2">Chatbot: Hello! How can I help you today?</p>
+        <div className="border p-4 rounded">
+          <h2 className="text-xl font-bold">Sample Video</h2>
+          <p>Sample description</p>
+          <iframe className="w-full h-64 mt-2" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Sample Video" allowFullScreen></iframe>
         </div>
       </div>
     </div>
