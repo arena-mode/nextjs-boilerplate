@@ -1,6 +1,8 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import AdminTab from "./components/AdminTab";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,6 +48,8 @@ export default function RootLayout({
             <a href="/cb-course" className="px-4 py-3 flex-shrink-0">CB Course</a>
           </nav>
         </div>
+        
+        <AdminTab />
         
         <main className="p-4">{children}</main>
       </body>
