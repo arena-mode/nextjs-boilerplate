@@ -30,10 +30,21 @@ export default function RootLayout({
           </div>
           <div className="flex items-center gap-4">
             <span>Free Tier</span>
-            <div>🔔</div>
-            <div>⋮</div>
+            <span>🔔</span>
           </div>
         </header>
         
         <div className="overflow-x-auto">
-          <nav className="
+          <nav className="flex whitespace-nowrap">
+            <a href="/" className="px-4 py-3 flex-shrink-0">Home</a>
+            <a href="/live-stream-alerts" className="px-4 py-3 flex-shrink-0">Live Stream Alerts</a>
+            <a href="/crypto-market" className="px-4 py-3 flex-shrink-0">Crypto Market</a>
+            <a href="/videos" className="px-4 py-3 flex-shrink-0">Videos</a>
+            <a href="/posts" className="px-4 py-3 flex-shrink-0">Posts</a>
+            <a href="/wallet-alerts" className="px-4 py-3 flex-shrink-0">Wallet Alerts</a>
+            <a href="/shorting" className="px-4 py-3 flex-shrink-0">Shorting</a>
+            <a href="/cb-course" className="px-4 py-3 flex-shrink-0">CB Course</a>
+          </nav>
+        </div>
+        
+        <main c
