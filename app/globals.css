@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@layer utilities {
+  /* Custom scrollbar styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 2px;
+  }
+  
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thumb-white::-webkit-scrollbar-thumb {
+    background-color: white;
+  }
+}
