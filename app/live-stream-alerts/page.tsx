@@ -24,7 +24,7 @@ export default function LiveStreamAlerts() {
         const { data, error } = await supabase
           .from('content')
           .select('*')
-          .eq('tab', 'live-stream-alerts');
+          .ilike('tab', 'live-stream-alerts')
         
         setDebug(prev => ({...prev, step3: "Query completed", dataLength: data?.length, error: error?.message}));
 
