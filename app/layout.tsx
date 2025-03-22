@@ -1,8 +1,6 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import AdminTab from "./components/AdminTab";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +30,7 @@ export default function RootLayout({
           </div>
           <div className="flex items-center gap-4">
             <span>Free Tier</span>
+            <a href="/admin" className="text-xs opacity-50 hover:opacity-100">Admin</a>
             <span>🔔</span>
           </div>
         </header>
@@ -48,8 +47,6 @@ export default function RootLayout({
             <a href="/cb-course" className="px-4 py-3 flex-shrink-0">CB Course</a>
           </nav>
         </div>
-        
-        <AdminTab />
         
         <main className="p-4">{children}</main>
       </body>
