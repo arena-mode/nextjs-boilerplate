@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 hidden" id="settings-modal">
+        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 hidden md:flex" id="settings-modal">
           <div className="bg-white p-4 rounded">
             <h2 className="text-xl font-bold">Settings</h2>
             <div className="mt-2">
@@ -30,7 +30,7 @@ export default function RootLayout({
             <button className="mt-4 p-2 bg-blue-500 text-white rounded" onClick="document.getElementById('settings-modal').classList.add('hidden')">Close</button>
           </div>
         </div>
-        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 hidden" id="notifications-modal">
+        <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 hidden md:flex" id="notifications-modal">
           <div className="bg-white p-4 rounded w-96">
             <h2 className="text-xl font-bold">Notifications</h2>
             <button className="mt-2 p-1 bg-gray-200 rounded text-sm">Read All</button>
@@ -40,13 +40,13 @@ export default function RootLayout({
             <button className="mt-4 p-2 bg-blue-500 text-white rounded" onClick="document.getElementById('notifications-modal').classList.add('hidden')">Close</button>
           </div>
         </div>
-        <header className="flex justify-between p-4 bg-black text-white">
+        <header className="flex flex-col sm:flex-row justify-between p-4 bg-black text-white">
           <div className="flex items-center gap-2">
             <img src="logo.png" alt="Crypto Bellwether" className="h-8" />
-            <span>Crypto Bellwether</span>
+            <span className="text-sm sm:text-base">Crypto Bellwether</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span>Free Tier</span>
+          <div className="flex items-center gap-4 mt-2 sm:mt-0">
+            <span className="text-sm sm:text-base">Free Tier</span>
             <div className="relative cursor-pointer" onClick="document.getElementById('notifications-modal').classList.remove('hidden')">
               <span className="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full px-1">0</span>
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ export default function RootLayout({
             <div className="cursor-pointer" onClick="document.getElementById('settings-modal').classList.remove('hidden')">⋮</div>
           </div>
         </header>
-        <nav className="flex gap-4 p-4 bg-gray-800 text-white">
+        <nav className="flex flex-wrap gap-4 p-4 bg-gray-800 text-white text-sm sm:text-base">
           <a href="/live-stream-alerts">Live Stream Alerts</a>
           <a href="/crypto-market">Crypto Market</a>
           <a href="/videos">Videos</a>
