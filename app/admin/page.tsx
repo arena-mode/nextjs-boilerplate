@@ -23,7 +23,8 @@ export default function Admin() {
     }
   };
 
-  const handleInputChange = (e) => {
+  // Add type annotation to fix the error
+  const handleInputChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
@@ -31,7 +32,8 @@ export default function Admin() {
     });
   };
 
-  const handleContentSubmit = async (e) => {
+  // Add type annotation to fix the error
+  const handleContentSubmit = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitMessage('');
@@ -60,7 +62,7 @@ export default function Admin() {
         tab: 'live-stream-alerts',
         notified: false
       });
-    } catch (error) {
+    } catch (error: any) {
       setSubmitMessage(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
@@ -175,4 +177,5 @@ export default function Admin() {
       <p>Password: CryptoBellwether</p>
     </div>
   );
+}
 }
