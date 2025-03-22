@@ -1,30 +1,52 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create a fresh Supabase client for this component
+const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LiveStreamAlerts() {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchAlerts() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('content')
-        .select('*')
-        .eq('tab', 'live-stream-alerts')
-        .order('created_at', { ascending: false });
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('content')
+          .select('*')
+          .eq('tab', 'live-stream-alerts')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          throw error;
+        }
         
-      if (error) {
-        console.error('Error fetching alerts:', error);
-      } else {
+        console.log("Fetched data:", data);
         setAlerts(data || []);
+      } catch (err) {
+        console.error('Error fetching alerts:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     
     fetchAlerts();
   }, []);
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">Live Stream Alerts</h1>
+        <div className="text-red-500">Error loading content: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
