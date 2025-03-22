@@ -5,9 +5,9 @@ export default function Home() {
         <img 
           src="/goat.png" 
           alt="Crypto Bellwether" 
-          width={120} 
-          height={120} 
-          className="rounded-full mx-auto"
+          width={200} 
+          height={200} 
+          className="rounded-lg mx-auto object-contain"
         />
       </div>
       
