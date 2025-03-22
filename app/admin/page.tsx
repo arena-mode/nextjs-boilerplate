@@ -1,10 +1,12 @@
 'use client';
 import { useState, useRef } from 'react';
 import { supabase } from '../utils/supabase';
+import ContentManagement from './content-management';
 
 export default function Admin() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeTab, setActiveTab] = useState('add'); // 'add' or 'manage'
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
@@ -108,106 +110,134 @@ export default function Admin() {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block">Select Tab</label>
-          <select 
-            value={tab} 
-            onChange={(e) => setTab(e.target.value)}
-            className="p-2 border rounded w-full bg-gray-800 text-white"
-            style={{ fontSize: '16px' }}
-          >
-            <option value="live-stream-alerts" className="text-base py-2">Live Stream Alerts</option>
-            <option value="crypto-market" className="text-base py-2">Crypto Market</option>
-            <option value="videos" className="text-base py-2">Videos</option>
-            <option value="posts" className="text-base py-2">Posts</option>
-            <option value="wallet-alerts" className="text-base py-2">Wallet Alerts</option>
-            <option value="shorting" className="text-base py-2">Shorting</option>
-            <option value="cb-course" className="text-base py-2">CB Course</option>
-          </select>
-        </div>
-        
-        <div className="mb-4">
-          <label className="block">Title</label>
-          <input 
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="p-2 border rounded w-full"
-            required
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label className="block">Content</label>
-          <textarea 
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            className="p-2 border rounded w-full h-32"
-            required
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label className="block">Media</label>
-          <div className="flex space-x-2">
+      {/* Tabs */}
+      <div className="flex mb-6 border-b border-gray-700">
+        <button
+          className={`px-4 py-2 mr-2 ${
+            activeTab === 'add'
+              ? 'border-b-2 border-blue-500 text-blue-500'
+              : 'text-gray-400 hover:text-gray-300'
+          }`}
+          onClick={() => setActiveTab('add')}
+        >
+          Add Content
+        </button>
+        <button
+          className={`px-4 py-2 ${
+            activeTab === 'manage'
+              ? 'border-b-2 border-blue-500 text-blue-500'
+              : 'text-gray-400 hover:text-gray-300'
+          }`}
+          onClick={() => setActiveTab('manage')}
+        >
+          Manage Content
+        </button>
+      </div>
+      
+      {activeTab === 'add' ? (
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block">Select Tab</label>
+            <select 
+              value={tab} 
+              onChange={(e) => setTab(e.target.value)}
+              className="p-2 border rounded w-full bg-gray-800 text-white"
+              style={{ fontSize: '16px' }}
+            >
+              <option value="live-stream-alerts" className="text-base py-2">Live Stream Alerts</option>
+              <option value="crypto-market" className="text-base py-2">Crypto Market</option>
+              <option value="videos" className="text-base py-2">Videos</option>
+              <option value="posts" className="text-base py-2">Posts</option>
+              <option value="wallet-alerts" className="text-base py-2">Wallet Alerts</option>
+              <option value="shorting" className="text-base py-2">Shorting</option>
+              <option value="cb-course" className="text-base py-2">CB Course</option>
+            </select>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block">Title</label>
             <input 
               type="text"
-              value={mediaUrl}
-              onChange={(e) => setMediaUrl(e.target.value)}
-              placeholder="URL or upload/paste an image"
-              className="p-2 border rounded flex-grow"
-            />
-            <button 
-              type="button" 
-              onClick={() => fileInputRef.current.click()}
-              className="p-2 bg-gray-700 text-white rounded"
-              disabled={uploadingImage}
-            >
-              {uploadingImage ? "Uploading..." : "Browse"}
-            </button>
-            <input 
-              ref={fileInputRef}
-              type="file" 
-              accept="image/*" 
-              className="hidden"
-              onChange={handleFileSelect}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="p-2 border rounded w-full"
+              required
             />
           </div>
-          {mediaUrl && (
-            <div className="mt-2">
-              <img src={mediaUrl} alt="Preview" className="h-20 object-contain" />
+          
+          <div className="mb-4">
+            <label className="block">Content</label>
+            <textarea 
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className="p-2 border rounded w-full h-32"
+              required
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block">Media</label>
+            <div className="flex space-x-2">
+              <input 
+                type="text"
+                value={mediaUrl}
+                onChange={(e) => setMediaUrl(e.target.value)}
+                placeholder="URL or upload/paste an image"
+                className="p-2 border rounded flex-grow"
+              />
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current.click()}
+                className="p-2 bg-gray-700 text-white rounded"
+                disabled={uploadingImage}
+              >
+                {uploadingImage ? "Uploading..." : "Browse"}
+              </button>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept="image/*" 
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            </div>
+            {mediaUrl && (
+              <div className="mt-2">
+                <img src={mediaUrl} alt="Preview" className="h-20 object-contain" />
+              </div>
+            )}
+            <p className="text-sm mt-1 text-gray-500">Enter a URL or upload an image</p>
+          </div>
+          
+          <div className="mb-4">
+            <label className="flex items-center">
+              <input 
+                type="checkbox"
+                checked={notified}
+                onChange={(e) => setNotified(e.target.checked)}
+                className="mr-2"
+              />
+              Send notification
+            </label>
+          </div>
+          
+          <button 
+            type="submit" 
+            className="p-2 bg-gray-800 text-white rounded w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Posting...' : 'Post Content'}
+          </button>
+          
+          {message && (
+            <div className="mt-4 p-2 bg-gray-700 text-white rounded">
+              {message}
             </div>
           )}
-          <p className="text-sm mt-1 text-gray-500">Enter a URL or upload an image</p>
-        </div>
-        
-        <div className="mb-4">
-          <label className="flex items-center">
-            <input 
-              type="checkbox"
-              checked={notified}
-              onChange={(e) => setNotified(e.target.checked)}
-              className="mr-2"
-            />
-            Send notification
-          </label>
-        </div>
-        
-        <button 
-          type="submit" 
-          className="p-2 bg-gray-800 text-white rounded w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Posting...' : 'Post Content'}
-        </button>
-        
-        {message && (
-          <div className="mt-4 p-2 bg-gray-700 text-white rounded">
-            {message}
-          </div>
-        )}
-      </form>
+        </form>
+      ) : (
+        <ContentManagement />
+      )}
     </div>
   );
 }
