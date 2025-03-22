@@ -1,13 +1,18 @@
 import React from 'react';
+import Link from 'next/link';
 
 const Logo = () => {
   return (
-    <div className="flex items-center gap-2">
-      {/* Simple text-based logo for now */}
-      <div className="font-bold text-xl text-white">
-        Crypto Bellwether
+    <Link href="/" className="flex items-center gap-2">
+      <div className="w-8 h-8">
+        <img 
+          src="/logo.png" 
+          alt="Crypto Bellwether" 
+          className="w-full h-full object-contain rounded-full"
+        />
       </div>
-    </div>
+      <span className="font-bold text-xl text-white">Crypto Bellwether</span>
+    </Link>
   );
 };
 
