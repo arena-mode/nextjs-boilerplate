@@ -41,7 +41,7 @@ export default function RootLayout({
           <a href="/wallet-alerts">Wallet Alerts</a>
           <a href="/shorting">Shorting</a>
           <a href="/cb-course">CB Course</a>
-        </nav>
+        <a href="/admin">Admin</a>
         <main>{children}</main>
       </body>
     </html>
