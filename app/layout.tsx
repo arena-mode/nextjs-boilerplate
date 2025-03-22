@@ -33,6 +33,15 @@ export default function RootLayout({
             <div className="cursor-pointer">⋮</div>
           </div>
         </header>
+        <nav className="flex gap-4 p-4 bg-gray-800 text-white">
+          <a href="/live-stream-alerts">Live Stream Alerts</a>
+          <a href="/crypto-market">Crypto Market</a>
+          <a href="/videos">Videos</a>
+          <a href="/posts">Posts</a>
+          <a href="/wallet-alerts">Wallet Alerts</a>
+          <a href="/shorting">Shorting</a>
+          <a href="/cb-course">CB Course</a>
+        </nav>
         <main>{children}</main>
       </body>
     </html>
