@@ -1,60 +1,65 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
 
 export default function LiveStreamAlerts() {
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  const [content, setContent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
-    // Create a single Supabase client for interacting with your database
-    const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    async function fetchPosts() {
-      try {
-        const { data, error } = await supabase
-          .from('content')
-          .select('*');
-        
-        if (error) throw error;
-        
-        console.log('Data fetched:', data);
-        setPosts(data);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+    // Direct fetch to Supabase REST API
+    fetch('https://sosrdqwwmyzvnspfmyjd.supabase.co/rest/v1/content?select=*&tab=eq.live-stream-alerts', {
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ'
       }
-    }
-
-    fetchPosts();
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Data received:', data);
+      setContent(data);
+      setLoading(false);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      setLoading(false);
+    });
   }, []);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
+  
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Live Stream Alerts</h1>
       
-      {posts.length === 0 ? (
-        <p>No content available</p>
+      {loading ? (
+        <p>Loading alerts...</p>
+      ) : content.length === 0 ? (
+        <p>No upcoming streams yet.</p>
       ) : (
-        <div>
-          <p>Found {posts.length} posts</p>
-          <div className="mt-4 space-y-4">
-            {posts.map(post => (
-              <div key={post.id} className="border p-4 rounded">
-                <h2 className="font-bold">{post.title}</h2>
-                <p>{post.body}</p>
-                <p className="text-sm mt-2">Tab: {post.tab}</p>
-              </div>
-            ))}
-          </div>
+        <div className="space-y-6">
+          {content.map(item => (
+            <div key={item.id} className="border border-gray-700 rounded-lg p-4">
+              <h2 className="text-xl font-bold">{item.title}</h2>
+              <p className="mt-2">{item.body}</p>
+              
+              {item.media_url && (
+                <div className="mt-4">
+                  {item.media_url.includes('youtube.com') ? (
+                    <iframe 
+                      src={item.media_url.replace('watch?v=', 'embed/')} 
+                      frameBorder="0" 
+                      allowFullScreen
+                      className="w-full h-64"
+                    ></iframe>
+                  ) : (
+                    <img 
+                      src={item.media_url} 
+                      alt={item.title} 
+                      className="max-h-64 rounded"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
