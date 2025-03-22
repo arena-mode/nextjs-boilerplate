@@ -23,17 +23,15 @@ export default function Admin() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value
     });
   };
 
-  const handleContentSubmit = async (e: React.FormEvent) => {
+  const handleContentSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitMessage('');
@@ -62,7 +60,7 @@ export default function Admin() {
         tab: 'live-stream-alerts',
         notified: false
       });
-    } catch (error: any) {
+    } catch (error) {
       setSubmitMessage(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
@@ -102,3 +100,79 @@ export default function Admin() {
                 <option value="posts">Posts</option>
                 <option value="wallet-alerts">Wallet Alerts</option>
                 <option value="shorting">Shorting</option>
+                <option value="cb-course">CB Course</option>
+              </select>
+            </div>
+            <div className="mt-2">
+              <input 
+                type="text" 
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="Title" 
+                className="p-2 border rounded w-full" 
+                required
+              />
+              <textarea 
+                name="body"
+                value={formData.body}
+                onChange={handleInputChange}
+                placeholder="Content" 
+                className="p-2 border rounded w-full mt-2"
+                required
+              />
+              <input 
+                type="text" 
+                name="media_url"
+                value={formData.media_url}
+                onChange={handleInputChange}
+                placeholder="YouTube URL (for Videos/Shorting/CB Course)" 
+                className="p-2 border rounded w-full mt-2" 
+              />
+              <div className="mt-2">
+                <label className="inline-flex items-center">
+                  <input 
+                    type="checkbox" 
+                    name="notified"
+                    checked={formData.notified}
+                    onChange={handleInputChange}
+                    className="mr-2" 
+                  />
+                  Trigger Alert
+                </label>
+              </div>
+              <button 
+                type="submit" 
+                className="mt-2 p-2 bg-green-500 text-white rounded"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Posting...' : 'Post'}
+              </button>
+              
+              {submitMessage && (
+                <div className={`mt-2 p-2 rounded ${submitMessage.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                  {submitMessage}
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <input
+        type="password"
+        placeholder="Enter password"
+        className="p-2 border rounded"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button onClick={handleSubmit} className="ml-2 p-2 bg-blue-500 text-white rounded">Submit</button>
+      <p>Password: CryptoBellwether</p>
+    </div>
+  );
+}
