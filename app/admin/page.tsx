@@ -23,11 +23,33 @@ export default function Admin() {
     }
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // For now just set the URL - we'll implement actual uploads later
-      setMediaUrl(URL.createObjectURL(file));
+    if (!file) return;
+    
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+        
+      setMediaUrl(data.publicUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -140,8 +162,9 @@ export default function Admin() {
               type="button" 
               onClick={() => fileInputRef.current.click()}
               className="p-2 bg-gray-700 text-white rounded"
+              disabled={uploadingImage}
             >
-              Browse
+              {uploadingImage ? "Uploading..." : "Browse"}
             </button>
             <input 
               ref={fileInputRef}
@@ -151,7 +174,12 @@ export default function Admin() {
               onChange={handleFileSelect}
             />
           </div>
-          <p className="text-sm mt-1 text-gray-500">Paste an image or enter a URL</p>
+          {mediaUrl && (
+            <div className="mt-2">
+              <img src={mediaUrl} alt="Preview" className="h-20 object-contain" />
+            </div>
+          )}
+          <p className="text-sm mt-1 text-gray-500">Enter a URL or upload an image</p>
         </div>
         
         <div className="mb-4">
