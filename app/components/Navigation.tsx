@@ -17,21 +17,24 @@ const Navigation = () => {
   ];
 
   return (
-    <div className="w-full overflow-x-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-      <nav className="flex min-w-max space-x-2 py-2 px-2 border-b border-gray-800">
+    <div className="w-full overflow-x-auto no-scrollbar border-b border-gray-800">
+      <nav className="flex space-x-1 py-2 px-2">
         {tabs.map((tab) => {
           const isActive = pathname === tab.path;
           return (
             <Link
               key={tab.path}
               href={tab.path}
-              className={`px-4 py-2 whitespace-nowrap rounded-md text-sm font-medium flex-shrink-0 transition-colors ${
-                isActive
-                  ? 'text-white bg-gray-800'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-              }`}
+              className="relative flex-shrink-0"
             >
-              {tab.name}
+              <div className={`px-4 py-2 whitespace-nowrap text-sm font-medium ${
+                isActive ? 'text-white' : 'text-gray-400 hover:text-white'
+              }`}>
+                {tab.name}
+              </div>
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              )}
             </Link>
           );
         })}
