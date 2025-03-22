@@ -21,7 +21,7 @@ export default function LiveStreamAlerts() {
         
         setDebug(prev => ({...prev, step2: "Created Supabase client"}));
 
-        // Get ALL content with no filter to see what's actually in the database
+        // Get content filtered to live-stream-alerts tab
         const { data, error } = await supabase
           .from('content')
           .select('*')
@@ -45,6 +45,21 @@ export default function LiveStreamAlerts() {
     fetchData();
   }, []);
 
+  function getYouTubeEmbedUrl(url) {
+    if (!url) return '';
+    
+    // Extract video ID using regex to handle different YouTube URL formats
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+    const match = url.match(regex);
+    
+    if (match && match[1]) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    
+    // If we couldn't extract the ID, return the original URL
+    return url;
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold">Live Stream Alerts</h1>
@@ -54,31 +69,22 @@ export default function LiveStreamAlerts() {
       ) : error ? (
         <div>
           <p className="text-red-500">Error: {error}</p>
-          <pre className="mt-4 bg-gray-800 p-4 rounded text-xs overflow-auto">
-            {JSON.stringify(debug, null, 2)}
-          </pre>
         </div>
       ) : content.length === 0 ? (
         <div>
           <p>No upcoming streams yet.</p>
-          <pre className="mt-4 bg-gray-800 p-4 rounded text-xs overflow-auto">
-            {JSON.stringify(debug, null, 2)}
-          </pre>
         </div>
       ) : (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 space-y-8">
           {content.map((item) => (
-            <div key={item.id} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
+            <div key={item.id} className="mb-6">
               <h2 className="text-xl font-semibold">{item.title}</h2>
               <p className="mt-2">{item.body}</p>
-              <p className="mt-2 text-gray-400">Tab: {item.tab}</p>
               
               {item.media_url && item.media_url.includes('youtube.com') && (
                 <div className="mt-4 aspect-video">
                   <iframe 
-                    src={item.media_url && item.media_url.includes('youtube.com') ? 
-                      item.media_url.replace('youtube.com/watch?v=', 'youtube.com/embed/') : 
-                      item.media_url}
+                    src={getYouTubeEmbedUrl(item.media_url)}
                     className="w-full h-full"
                     allowFullScreen
                     title={item.title}
