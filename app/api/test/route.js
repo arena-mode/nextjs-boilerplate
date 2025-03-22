@@ -10,6 +10,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('content')
       .select('*')
+      .eq('tab', 'live-stream-alerts')
       .limit(10);
       
     return new Response(JSON.stringify({
