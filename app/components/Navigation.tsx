@@ -1,7 +1,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 
-const Navigation = () => {
+export default function Navigation() {
   const pathname = usePathname();
   
   const tabs = [
@@ -16,19 +16,17 @@ const Navigation = () => {
   ];
 
   return (
-    <div className="relative w-full overflow-x-auto">
-      <nav className="flex items-center space-x-1 py-3 px-2">
+    <div className="border-b border-gray-800">
+      <nav className="flex overflow-x-auto py-2">
         {tabs.map((tab) => {
           const isActive = pathname === tab.path;
           return (
             
               key={tab.path}
               href={tab.path}
-              className={`relative px-4 py-2 whitespace-nowrap text-sm font-medium transition-colors ${
-                isActive
-                  ? 'text-white'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-4 py-2 whitespace-nowrap text-sm font-medium ${
+                isActive ? 'text-white' : 'text-gray-400 hover:text-white'
+              } relative`}
             >
               {tab.name}
               {isActive && (
@@ -38,9 +36,6 @@ const Navigation = () => {
           );
         })}
       </nav>
-      <div className="absolute bottom-0 w-full h-px bg-gray-800" />
     </div>
   );
-};
-
-export default Navigation;
+}
