@@ -17,15 +17,15 @@ const Navigation = () => {
   ];
 
   return (
-    <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-      <nav className="flex items-center space-x-1 py-2 border-b border-gray-800">
+    <div className="w-full overflow-x-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <nav className="flex min-w-max space-x-2 py-2 px-2 border-b border-gray-800">
         {tabs.map((tab) => {
           const isActive = pathname === tab.path;
           return (
             <Link
               key={tab.path}
               href={tab.path}
-              className={`px-4 py-2 whitespace-nowrap rounded-md text-sm transition-colors ${
+              className={`px-4 py-2 whitespace-nowrap rounded-md text-sm font-medium flex-shrink-0 transition-colors ${
                 isActive
                   ? 'text-white bg-gray-800'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
