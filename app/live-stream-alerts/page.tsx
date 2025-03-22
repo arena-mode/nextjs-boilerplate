@@ -21,12 +21,12 @@ export default function LiveStreamAlerts() {
         
         setDebug(prev => ({...prev, step2: "Created Supabase client"}));
 
+        // Get ALL content with no filter to see what's actually in the database
         const { data, error } = await supabase
           .from('content')
-          .select('*')
-          .ilike('tab', 'live-stream-alerts')
+          .select('*');
         
-        setDebug(prev => ({...prev, step3: "Query completed", dataLength: data?.length, error: error?.message}));
+        setDebug(prev => ({...prev, step3: "Query completed", dataLength: data?.length, error: error?.message, allData: data}));
 
         console.log("Query result:", { data, error });
         
@@ -70,6 +70,7 @@ export default function LiveStreamAlerts() {
             <div key={item.id} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
               <h2 className="text-xl font-semibold">{item.title}</h2>
               <p className="mt-2">{item.body}</p>
+              <p className="mt-2 text-gray-400">Tab: {item.tab}</p>
               
               {item.media_url && item.media_url.includes('youtube.com') && (
                 <div className="mt-4 aspect-video">
