@@ -1,18 +1,29 @@
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+    <div className="flex flex-col items-center justify-center text-center">
+      <div className="mb-8 mt-12">
+        <img 
+          src="/goat.png" 
+          alt="Crypto Bellwether" 
+          width={120} 
+          height={120} 
+          className="rounded-full mx-auto"
+        />
+      </div>
+      
       <h1 className="text-4xl font-bold mb-4">Welcome to Crypto Bellwether</h1>
-      <p className="text-xl max-w-2xl mb-8">
+      <p className="mb-8 max-w-xl">
         Your comprehensive cryptocurrency platform for alerts, market updates, and exclusive content.
       </p>
-      <div className="flex flex-wrap gap-4 justify-center">
-        <a href="/live-stream-alerts" className="px-6 py-3 bg-[#444654] rounded-lg hover:bg-[#565869]">
+      
+      <div className="flex gap-4 flex-wrap justify-center">
+        <a href="/live-stream-alerts" className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded">
           Live Stream Alerts
         </a>
-        <a href="/videos" className="px-6 py-3 bg-[#444654] rounded-lg hover:bg-[#565869]">
+        <a href="/videos" className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded">
           Videos
         </a>
-        <a href="/posts" className="px-6 py-3 bg-[#444654] rounded-lg hover:bg-[#565869]">
+        <a href="/posts" className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded">
           Posts
         </a>
       </div>
