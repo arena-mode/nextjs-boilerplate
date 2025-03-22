@@ -51,3 +51,36 @@ export default function LiveStreamAlerts() {
       {loading ? (
         <p>Loading alerts...</p>
       ) : alerts.length === 0 ? (
+        <p>No upcoming streams yet.</p>
+      ) : (
+        <div className="space-y-6">
+          {alerts.map((alert) => (
+            <div key={alert.id} className="border border-gray-700 rounded-lg p-4">
+              <h2 className="text-xl font-bold">{alert.title}</h2>
+              <p className="mt-2">{alert.body}</p>
+              
+              {alert.media_url && (
+                <div className="mt-4">
+                  {alert.media_url.includes('youtube.com') || alert.media_url.includes('youtu.be') ? (
+                    <iframe 
+                      src={alert.media_url.replace('watch?v=', 'embed/')} 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                      className="w-full h-64"
+                    ></iframe>
+                  ) : (
+                    <img 
+                      src={alert.media_url} 
+                      alt={alert.title} 
+                      className="max-h-64 rounded"
+                    />
+                  )}
+                </div>
+              )}
+              
+              <div className="mt-2 text-gray-500 text-sm">
+                {new Date(alert.created_at).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
