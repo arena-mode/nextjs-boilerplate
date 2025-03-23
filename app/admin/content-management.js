@@ -1,234 +1,213 @@
 'use client';
 import { useState, useEffect } from 'react';
-import supabaseClient from '../utils/supabaseClient.js';
-
-// Update these to match exactly what's in the database (from your screenshots)
-const tabs = [
-  "live-stream-alerts",
-  "crypto-market", 
-  "videos",
-  "posts",
-  "wallet-alerts",
-  "shorting",
-  "cb-course"
-];
-
-const tabLabels = {
-  "live-stream-alerts": "Live Stream Alerts",
-  "crypto-market": "Crypto Market",
-  "videos": "Videos",
-  "posts": "Posts",
-  "wallet-alerts": "Wallet Alerts",
-  "shorting": "Shorting",
-  "cb-course": "CB Course"
-};
+import contentService from '../utils/contentService';
 
 export default function ContentManagement() {
-  const [selectedTab, setSelectedTab] = useState(tabs[0]);
+  const [selectedTab, setSelectedTab] = useState('live-stream-alerts');
   const [content, setContent] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [actionStatus, setActionStatus] = useState({ message: '', isError: false });
 
-  // Fetch content for the selected tab
   useEffect(() => {
-    const fetchContent = async () => {
-  setLoading(true);
-  try {
-    console.log("Fetching content for tab:", selectedTab); // Debug log
-    console.log("Supabase client available:", !!supabaseClient);
-    
-    // Try to fetch all content without filtering by tab
-    const allContentResult = await supabaseClient
-      .from('content')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    console.log("All content query result:", allContentResult);
-    
-    // Original query with tab filter
-    const { data, error } = await supabaseClient
-      .from('content')
-      .select('*')
-      .eq('tab', selectedTab)
-      .order('created_at', { ascending: false });
-    
-    console.log("Filtered content result:", { data, error });
-    
-    if (error) throw error;
-    setContent(data || []);
-  } catch (err) {
-    console.error('Error fetching content:', err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
     fetchContent();
   }, [selectedTab]);
 
-  // Handle delete content
-  const handleDelete = async (id) => {
+  const fetchContent = async () => {
+    setLoading(true);
+    setError(null);
+    
     try {
-      setActionStatus({ message: 'Deleting...', isError: false });
+      // Use contentService to fetch content for the selected tab
+      const { data, error } = await contentService.getAllContentByTab(selectedTab);
       
-      const { error } = await supabaseClient
-        .from('content')
-        .delete()
-        .eq('id', id);
+      if (error) {
+        throw error;
+      }
       
-      if (error) throw error;
+      setContent(data || []);
+    } catch (err) {
+      console.error('Error fetching content:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setSelectedTab(tab);
+  };
+
+  const handleDeleteContent = async (id) => {
+    if (!confirm('Are you sure you want to delete this content?')) {
+      return;
+    }
+    
+    try {
+      // Use contentService to delete content
+      const { error } = await contentService.deleteContent(id);
       
-      // Remove the deleted item from the content state
-      setContent(content.filter(item => item.id !== id));
-      setActionStatus({ message: 'Content deleted successfully!', isError: false });
+      if (error) {
+        throw error;
+      }
       
-      // Clear status message after 3 seconds
-      setTimeout(() => {
-        setActionStatus({ message: '', isError: false });
-      }, 3000);
+      // Refresh content list
+      fetchContent();
     } catch (err) {
       console.error('Error deleting content:', err);
-      setActionStatus({ message: `Error deleting content: ${err.message}`, isError: true });
+      alert(`Error deleting content: ${err.message}`);
     }
   };
 
-  // Handle notify for content
-  const handleNotify = async (id) => {
+  const handleToggleNotification = async (id, currentStatus) => {
     try {
-      setActionStatus({ message: 'Setting notification...', isError: false });
+      // Use contentService to toggle notification status
+      const { error } = await contentService.updateNotificationStatus(id, !currentStatus);
       
-      const { error } = await supabaseClient
-        .from('content')
-        .update({ notified: true })
-        .eq('id', id);
+      if (error) {
+        throw error;
+      }
       
-      if (error) throw error;
-      
-      // Update the notified status in the content state
-      setContent(content.map(item => 
-        item.id === id ? { ...item, notified: true } : item
-      ));
-      
-      setActionStatus({ message: 'Notification set successfully!', isError: false });
-      
-      // Clear status message after 3 seconds
-      setTimeout(() => {
-        setActionStatus({ message: '', isError: false });
-      }, 3000);
+      // Refresh content list
+      fetchContent();
     } catch (err) {
-      console.error('Error setting notification:', err);
-      setActionStatus({ message: `Error setting notification: ${err.message}`, isError: true });
+      console.error('Error updating notification status:', err);
+      alert(`Error updating notification: ${err.message}`);
     }
   };
 
-  // Format date for display
+  // Helper function to format date
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return date.toLocaleString();
   };
 
-  // Function to extract YouTube video ID
-  const getYouTubeVideoId = (url) => {
-    if (!url || !url.includes('youtube.com')) return null;
+  // Helper to extract YouTube video ID
+  const getYoutubeId = (url) => {
+    if (!url) return null;
     
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
-    const match = url.match(regex);
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
     
-    return match && match[1] ? match[1] : null;
+    return (match && match[2].length === 11) ? match[2] : null;
   };
 
   return (
-    <div className="px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Content Management</h1>
-      
-      {/* Status message */}
-      {actionStatus.message && (
-        <div className={`p-3 mb-4 rounded ${actionStatus.isError ? 'bg-red-800' : 'bg-green-800'}`}>
-          {actionStatus.message}
-        </div>
-      )}
+    <div>
+      <h2 className="text-xl font-bold mb-4">Content Management</h2>
       
       {/* Tab selector */}
-      <div className="mb-6 overflow-x-auto">
-        <div className="flex space-x-2 pb-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              className={`px-4 py-2 rounded whitespace-nowrap ${
-                selectedTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-              onClick={() => setSelectedTab(tab)}
-            >
-              {tabLabels[tab]}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap mb-4">
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'live-stream-alerts' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('live-stream-alerts')}
+        >
+          Live Stream Alerts
+        </button>
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'crypto-market' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('crypto-market')}
+        >
+          Crypto Market
+        </button>
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'videos' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('videos')}
+        >
+          Videos
+        </button>
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'posts' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('posts')}
+        >
+          Posts
+        </button>
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'wallet-alerts' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('wallet-alerts')}
+        >
+          Wallet Alerts
+        </button>
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'shorting' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('shorting')}
+        >
+          Shorting
+        </button>
+        <button
+          className={`mr-2 mb-2 p-2 ${selectedTab === 'cb-course' ? 'bg-blue-500 text-white' : 'bg-gray-700'}`}
+          onClick={() => handleTabChange('cb-course')}
+        >
+          CB Course
+        </button>
       </div>
-
-      {/* Content list */}
+      
       {loading ? (
         <p>Loading content...</p>
       ) : error ? (
         <p className="text-red-500">Error: {error}</p>
       ) : content.length === 0 ? (
-        <p>No content available for {tabLabels[selectedTab]}.</p>
+        <p>No content available for {selectedTab}.</p>
       ) : (
-        <div className="space-y-6">
-          {content.map((item) => (
-            <div key={item.id} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
-              <div className="flex justify-between items-start mb-2">
-                <h2 className="text-xl font-semibold">{item.title}</h2>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleNotify(item.id)}
-                    className={`p-2 rounded ${
-                      item.notified ? 'bg-green-700 text-white' : 'bg-gray-700 hover:bg-blue-700'
-                    }`}
-                    disabled={item.notified}
-                    title={item.notified ? 'Already notified' : 'Set notification'}
-                  >
-                    🔔
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="p-2 rounded bg-gray-700 hover:bg-red-700"
-                    title="Delete content"
-                  >
-                    🗑️
-                  </button>
-                </div>
+        <div className="space-y-4">
+          {content.map(item => (
+            <div key={item.id} className="border border-gray-700 p-4 rounded">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-semibold">{item.title}</h3>
+                <span className="bg-blue-900 text-white text-xs px-2 py-1 rounded">
+                  {item.tier || 'free'}
+                </span>
               </div>
               
-              <p className="text-sm text-gray-400 mb-3">
-                Posted: {formatDate(item.created_at)}
-              </p>
+              <p className="mb-3">{item.body}</p>
               
-              {/* Display media preview */}
-              {item.media_url && getYouTubeVideoId(item.media_url) && (
-                <div className="mb-3 aspect-video max-h-60 overflow-hidden">
+              {item.media_url && getYoutubeId(item.media_url) && (
+                <div className="mb-3">
+                  <iframe 
+                    width="200" 
+                    height="113" 
+                    src={`https://www.youtube.com/embed/${getYoutubeId(item.media_url)}`}
+                    title={item.title}
+                    allowFullScreen
+                    className="rounded"
+                  ></iframe>
+                </div>
+              )}
+              
+              {item.media_url && !getYoutubeId(item.media_url) && (
+                <div className="mb-3">
                   <img 
-                    src={`https://img.youtube.com/vi/${getYouTubeVideoId(item.media_url)}/0.jpg`}
-                    alt="YouTube thumbnail"
-                    className="w-full object-cover"
+                    src={item.media_url} 
+                    alt={item.title} 
+                    className="h-32 object-contain rounded"
                   />
                 </div>
               )}
               
-              <p className="text-gray-300">{item.body}</p>
+              <div className="text-sm text-gray-500 mb-3">
+                Created: {formatDate(item.created_at)}
+              </div>
+              
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleDeleteContent(item.id)}
+                  className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+                >
+                  Delete
+                </button>
+                
+                <button
+                  onClick={() => handleToggleNotification(item.id, item.notified || item.send_notification)}
+                  className={`px-3 py-1 rounded text-sm ${
+                    (item.notified || item.send_notification) 
+                      ? 'bg-yellow-600 text-white' 
+                      : 'bg-gray-600 text-white'
+                  }`}
+                >
+                  {(item.notified || item.send_notification) ? 'Notification On' : 'Notification Off'}
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
-    </div>
-  );
-}
