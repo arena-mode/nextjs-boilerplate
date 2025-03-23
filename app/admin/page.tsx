@@ -233,8 +233,18 @@ export default function Admin() {
             <div className="mt-4 p-2 bg-gray-700 text-white rounded">
               {message}
             </div>
-          )}
-        </form>
+{activeTab === 'add' && (
+  <button 
+    onClick={() => {
+      if(confirm('Are you sure you want to log out?')) {
+        setIsAuthenticated(false);
+      }
+    }}
+    className="mt-8 p-2 bg-gray-700 text-white rounded w-full"
+  >
+    Logout
+  </button>
+)}        </form>
       ) : (
         <ContentManagement />
       )}
