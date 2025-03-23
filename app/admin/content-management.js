@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import supabaseClient from '../utils/supabaseClient';
+import supabaseClient from '../utils/supabase';
 
 // Update these to match exactly what's in the database (from your screenshots)
 const tabs = [
