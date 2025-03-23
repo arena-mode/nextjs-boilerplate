@@ -2,9 +2,10 @@
 import { useState, useEffect } from 'react';
 import supabaseClient from '../utils/supabaseClient';
 
+// Update these to match exactly what's in the database (from your screenshots)
 const tabs = [
   "live-stream-alerts",
-  "crypto-market",
+  "crypto-market", 
   "videos",
   "posts",
   "wallet-alerts",
@@ -34,12 +35,16 @@ export default function ContentManagement() {
     const fetchContent = async () => {
       setLoading(true);
       try {
+        console.log("Fetching content for tab:", selectedTab); // Debug log
+        
         const { data, error } = await supabaseClient
           .from('content')
           .select('*')
           .eq('tab', selectedTab)
           .order('created_at', { ascending: false });
-
+        
+        console.log("Fetch result:", { data, error }); // Debug log
+        
         if (error) throw error;
         setContent(data || []);
       } catch (err) {
