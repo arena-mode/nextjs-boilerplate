@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import supabaseClient from '../../../utils/supabaseClient.js';
+import supabaseClient from '../../utils/supabaseClient.js'; // Fixed path: two levels up from app/admin/login/
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
