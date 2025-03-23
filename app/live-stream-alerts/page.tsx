@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import supabaseClient from '../../utils/supabaseClient.js';
+import supabaseClient from '../utils/supabaseClient.js';
 
 export default function LiveStreamAlerts() {
   const [content, setContent] = useState([]);
