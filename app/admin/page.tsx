@@ -120,14 +120,15 @@ export default function Admin() {
     setIsSubmitting(true);
     
     try {
-      // Use the new contentService instead of direct Supabase call
+      // Use the contentService to add content
       const { error } = await contentService.addContent({ 
         title, 
         body, 
         media_url: mediaUrl,
         tab,
-        tier, // Include the tier
-        send_notification: notified // Match the field name in contentService
+        tier,
+        notified: notified,
+        send_notification: notified
       }, notified);
         
       if (error) throw error;
@@ -141,7 +142,7 @@ export default function Admin() {
       setNotified(false);
     } catch (error) {
       setMessage('Error posting content');
-      console.error(error);
+      console.error('Error adding content:', error);
     } finally {
       setIsSubmitting(false);
     }
