@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import supabaseClient from '../utils/supabaseClient';
+import supabaseClient from '../utils/supabase';
 import ContentManagement from './content-management';
 
 export default function Admin() {
