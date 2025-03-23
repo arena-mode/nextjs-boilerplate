@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import supabaseClient from '../utils/supabaseClient.js';
+import supabaseClient from '../../utils/supabaseClient.js';
 
 export default function LiveStreamAlerts() {
   const [content, setContent] = useState([]);
@@ -8,28 +8,38 @@ export default function LiveStreamAlerts() {
   const [error, setError] = useState(null);
   
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log("Fetching live stream alerts data...");
-        
-        // Order by created_at descending to show newest first
-        const { data, error } = await supabaseClient
-          .from('content')
-          .select('*')
-          .eq('tab', 'live-stream-alerts')
-          .order('created_at', { ascending: false });
-        
-        console.log("Query result:", { data, error });
-        
-        if (error) throw error;
-        setContent(data || []);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+   const fetchData = async () => {
+  try {
+    console.log("Fetching live stream alerts data...");
+    
+    // Add this line to check the Supabase client
+    console.log("Supabase client:", supabaseClient);
+    
+    // Order by created_at descending to show newest first
+    console.log("About to execute query with parameters:", { tab: 'live-stream-alerts' });
+    
+    const { data, error } = await supabaseClient
+      .from('content')
+      .select('*')
+      .eq('tab', 'live-stream-alerts')
+      .order('created_at', { ascending: false });
+    
+    // Add more detailed logging
+    console.log("Query completed");
+    console.log("Data returned:", data); // Log the actual data array
+    console.log("Error returned:", error); // Log any errors
+    console.log("Data type:", typeof data);
+   console.log("Data length:", data ? data.length : 'N/A');
+    
+    if (error) throw error;
+    setContent(data || []);
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
     
     fetchData();
   }, []);
