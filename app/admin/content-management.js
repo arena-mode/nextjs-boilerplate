@@ -8,21 +8,34 @@ export default async function ContentManagement() {
 
   console.log('Admin content:', data, 'Error:', error);
 
+  if (error) {
+    return (
+      <div>
+        <h2>Content Management</h2>
+        <p>Error: {error.message}</p>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div>
+        <h2>Content Management</h2>
+        <p>No content available for Live Stream Alerts</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2>Content Management</h2>
-      {error && <p>Error: {error.message}</p>}
-      {data && data.length > 0 ? (
-        <ul>
-          {data.map((item) => (
-            <li key={item.id}>
-              <strong>{item.title}</strong>: {item.body}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No content available for Live Stream Alerts</p>
-      )}
+      <ul>
+        {data.map((item) => (
+          <li key={item.id}>
+            <strong>{item.title}</strong>: {item.body}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
