@@ -33,27 +33,37 @@ export default function ContentManagement() {
   // Fetch content for the selected tab
   useEffect(() => {
     const fetchContent = async () => {
-      setLoading(true);
-      try {
-        console.log("Fetching content for tab:", selectedTab); // Debug log
-        
-        const { data, error } = await supabaseClient
-          .from('content')
-          .select('*')
-          .eq('tab', selectedTab)
-          .order('created_at', { ascending: false });
-        
-        console.log("Fetch result:", { data, error }); // Debug log
-        
-        if (error) throw error;
-        setContent(data || []);
-      } catch (err) {
-        console.error('Error fetching content:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+  setLoading(true);
+  try {
+    console.log("Fetching content for tab:", selectedTab); // Debug log
+    console.log("Supabase client available:", !!supabaseClient);
+    
+    // Try to fetch all content without filtering by tab
+    const allContentResult = await supabaseClient
+      .from('content')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    console.log("All content query result:", allContentResult);
+    
+    // Original query with tab filter
+    const { data, error } = await supabaseClient
+      .from('content')
+      .select('*')
+      .eq('tab', selectedTab)
+      .order('created_at', { ascending: false });
+    
+    console.log("Filtered content result:", { data, error });
+    
+    if (error) throw error;
+    setContent(data || []);
+  } catch (err) {
+    console.error('Error fetching content:', err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchContent();
   }, [selectedTab]);
