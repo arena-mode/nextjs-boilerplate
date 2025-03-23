@@ -211,3 +211,6 @@ export default function ContentManagement() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
