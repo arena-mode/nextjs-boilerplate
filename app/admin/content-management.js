@@ -1,16 +1,26 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import supabaseClient from '../utils/supabaseClient';
 
 const tabs = [
-  "Live Stream Alerts",
-  "Crypto Market",
-  "Videos",
-  "Posts",
-  "Wallet Alerts",
-  "Shorting",
-  "CB Course"
+  "live-stream-alerts",
+  "crypto-market",
+  "videos",
+  "posts",
+  "wallet-alerts",
+  "shorting",
+  "cb-course"
 ];
+
+const tabLabels = {
+  "live-stream-alerts": "Live Stream Alerts",
+  "crypto-market": "Crypto Market",
+  "videos": "Videos",
+  "posts": "Posts",
+  "wallet-alerts": "Wallet Alerts",
+  "shorting": "Shorting",
+  "cb-course": "CB Course"
+};
 
 export default function ContentManagement() {
   const [selectedTab, setSelectedTab] = useState(tabs[0]);
@@ -19,18 +29,12 @@ export default function ContentManagement() {
   const [error, setError] = useState(null);
   const [actionStatus, setActionStatus] = useState({ message: '', isError: false });
 
-  // Initialize Supabase client
-  const supabase = createClient(
-    'https://sosrdqwwmyzvnspfmyjd.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ'
-  );
-
   // Fetch content for the selected tab
   useEffect(() => {
     const fetchContent = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('content')
           .select('*')
           .eq('tab', selectedTab)
@@ -54,7 +58,7 @@ export default function ContentManagement() {
     try {
       setActionStatus({ message: 'Deleting...', isError: false });
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('content')
         .delete()
         .eq('id', id);
@@ -80,7 +84,7 @@ export default function ContentManagement() {
     try {
       setActionStatus({ message: 'Setting notification...', isError: false });
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('content')
         .update({ notified: true })
         .eq('id', id);
@@ -150,7 +154,7 @@ export default function ContentManagement() {
               }`}
               onClick={() => setSelectedTab(tab)}
             >
-              {tab}
+              {tabLabels[tab]}
             </button>
           ))}
         </div>
@@ -162,7 +166,7 @@ export default function ContentManagement() {
       ) : error ? (
         <p className="text-red-500">Error: {error}</p>
       ) : content.length === 0 ? (
-        <p>No content available for {selectedTab}.</p>
+        <p>No content available for {tabLabels[selectedTab]}.</p>
       ) : (
         <div className="space-y-6">
           {content.map((item) => (
