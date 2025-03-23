@@ -128,6 +128,7 @@ const contentService = {
         tab: normalizedTab,
         tier: tier,
         send_notification: sendNotification,
+        notified: sendNotification, // Support both field names
         created_at: new Date().toISOString(),
       };
       
@@ -211,7 +212,10 @@ const contentService = {
       
       const { data, error, status } = await supabaseClient
         .from('content')
-        .update({ send_notification: sendNotification })
+        .update({ 
+          send_notification: sendNotification,
+          notified: sendNotification // Support both field names
+        })
         .eq('id', id)
         .select();
       
