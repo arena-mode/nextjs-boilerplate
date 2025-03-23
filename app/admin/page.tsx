@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import supabaseClient from '../utils/supabaseClient.js';
+import contentService from '../utils/contentService';
 import ContentManagement from './content-management';
 
 export default function Admin() {
@@ -12,6 +13,7 @@ export default function Admin() {
   const [body, setBody] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [tab, setTab] = useState('live-stream-alerts');
+  const [tier, setTier] = useState('free');
   const [notified, setNotified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -118,15 +120,15 @@ export default function Admin() {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabaseClient
-        .from('content')
-        .insert([{ 
-          title, 
-          body, 
-          media_url: mediaUrl,
-          tab,
-          notified
-        }]);
+      // Use the new contentService instead of direct Supabase call
+      const { error } = await contentService.addContent({ 
+        title, 
+        body, 
+        media_url: mediaUrl,
+        tab,
+        tier, // Include the tier
+        send_notification: notified // Match the field name in contentService
+      }, notified);
         
       if (error) throw error;
       
@@ -135,6 +137,7 @@ export default function Admin() {
       setBody('');
       setMediaUrl('');
       setTab('live-stream-alerts');
+      setTier('free');
       setNotified(false);
     } catch (error) {
       setMessage('Error posting content');
@@ -212,6 +215,21 @@ export default function Admin() {
               <option value="videos" className="text-base py-2">Videos</option>
               <option value="posts" className="text-base py-2">Posts</option>
               <option value="wallet-alerts" className="text-base py-2">Wallet Alerts</option>
+              <option value="shorting" className="text-base py-2">Shorting</option>
+              <option value="cb-course" className="text-base py-2">CB Course</option>
+            </select>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block">Access Tier</label>
+            <select 
+              value={tier} 
+              onChange={(e) => setTier(e.target.value)}
+              className="p-2 border rounded w-full bg-gray-800 text-white"
+              style={{ fontSize: '16px' }}
+            >
+              <option value="free" className="text-base py-2">Free</option>
+              <option value="inner-circle" className="text-base py-2">Inner Circle</option>
               <option value="shorting" className="text-base py-2">Shorting</option>
               <option value="cb-course" className="text-base py-2">CB Course</option>
             </select>
@@ -311,4 +329,5 @@ export default function Admin() {
       )}
     </div>
   );
+}
 }
