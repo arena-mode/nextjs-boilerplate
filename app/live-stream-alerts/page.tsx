@@ -1,47 +1,36 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import supabaseClient from '../utils/supabaseClient';
 
 export default function LiveStreamAlerts() {
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [debug, setDebug] = useState({});
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching data...");
-        setDebug(prev => ({...prev, step1: "Started fetch"}));
+        console.log("Fetching live stream alerts data...");
         
-        const supabase = createClient(
-          'https://sosrdqwwmyzvnspfmyjd.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ'
-        );
-        
-        setDebug(prev => ({...prev, step2: "Created Supabase client"}));
-
-        // Get content filtered to live-stream-alerts tab
-        const { data, error } = await supabase
+        // Order by created_at descending to show newest first
+        const { data, error } = await supabaseClient
           .from('content')
           .select('*')
-          .eq('tab', 'live-stream-alerts');
+          .eq('tab', 'live-stream-alerts')
+          .order('created_at', { ascending: false });
         
-        setDebug(prev => ({...prev, step3: "Query completed", dataLength: data?.length, error: error?.message, allData: data}));
-
         console.log("Query result:", { data, error });
         
         if (error) throw error;
         setContent(data || []);
       } catch (err) {
         console.error('Error fetching data:', err);
-        setDebug(prev => ({...prev, error: err.message}));
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, []);
 
@@ -88,6 +77,17 @@ export default function LiveStreamAlerts() {
                     className="w-full h-full"
                     allowFullScreen
                     title={item.title}
+                  />
+                </div>
+              )}
+              
+              {/* Display regular images if not YouTube */}
+              {item.media_url && !item.media_url.includes('youtube.com') && (
+                <div className="mt-4">
+                  <img 
+                    src={item.media_url} 
+                    alt={item.title}
+                    className="max-w-full rounded"
                   />
                 </div>
               )}
