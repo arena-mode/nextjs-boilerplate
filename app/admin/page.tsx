@@ -1,41 +1,33 @@
-'use client';
-import { useState, useRef, useEffect } from 'react';
-import supabaseClient from '../utils/supabase';
-import ContentManagement from './content-management';
-
-export default function Admin() {
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('add'); // 'add' or 'manage'
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [tab, setTab] = useState('live-stream-alerts');
-  const [notified, setNotified] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const fileInputRef = useRef(null);
-
-  // Check if user is already authenticated on page load
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data, error } = await supabaseClient.auth.getSession();
-        
-        if (data.session) {
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
+// At the top of your admin/page.tsx file, right after the imports
+useEffect(() => {
+  // Debug the supabase client directly
+  console.log('Direct supabase import in admin page:', supabaseClient);
+  console.log('Auth available in admin page:', supabaseClient.auth ? 'Yes' : 'No');
+  
+  const checkSession = async () => {
+    try {
+      console.log('About to check session with:', supabaseClient);
+      if (!supabaseClient.auth) {
+        console.error('Auth is not available on the client');
         setLoading(false);
+        return;
       }
-    };
-    
-    checkSession();
-  }, []);
+      
+      const { data, error } = await supabaseClient.auth.getSession();
+      console.log('Session check result:', { data, error });
+      
+      if (data?.session) {
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error('Error checking session:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  checkSession();
+}, []);
 
   const handleLogin = async () => {
     if (password !== 'CryptoBellwether') {
