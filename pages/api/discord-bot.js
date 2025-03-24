@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   });
 
   client.on('messageCreate', (message) => {
-    if (message.channel.id === 'YOUR_CHANNEL_ID' && !message.author.bot) {
+    if (message.channel.id === '1353588957568569375' && !message.author.bot) {
       alerts.push({
         content: message.content,
         timestamp: new Date().toISOString(),
