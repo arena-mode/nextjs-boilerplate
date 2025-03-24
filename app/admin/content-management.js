@@ -189,22 +189,34 @@ export default function ContentManagement() {
               </div>
               
               <div className="flex space-x-2">
+                {/* Delete Button with Trash Icon */}
                 <button
                   onClick={() => handleDeleteContent(item.id)}
-                  className="bg-red-600 text-white px-3 py-1 rounded text-sm"
+                  className="bg-red-600 text-white p-2 rounded hover:bg-red-700"
+                  title="Delete"
                 >
-                  Delete
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
                 
+                {/* Notification Button with Bell Icon */}
                 <button
                   onClick={() => handleToggleNotification(item.id, item.notified || item.send_notification)}
-                  className={`px-3 py-1 rounded text-sm ${
+                  className={`p-2 rounded hover:opacity-80 ${
                     (item.notified || item.send_notification) 
-                      ? 'bg-yellow-600 text-white' 
+                      ? 'bg-yellow-500 text-white' 
                       : 'bg-gray-600 text-white'
                   }`}
+                  title={
+                    (item.notified || item.send_notification) 
+                      ? 'Notification Enabled' 
+                      : 'Enable Notification'
+                  }
                 >
-                  {(item.notified || item.send_notification) ? 'Notification On' : 'Notification Off'}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
                 </button>
               </div>
             </div>
