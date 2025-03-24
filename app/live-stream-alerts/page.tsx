@@ -1,106 +1,125 @@
 'use client';
-import { useEffect, useState } from 'react';
-import supabaseClient from '../utils/supabaseClient.js';
+
+import { useState, useEffect } from 'react';
+import contentService from '../utils/contentService';
 
 export default function LiveStreamAlerts() {
-  const [content, setContent] = useState([]);
+  const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  useEffect(() => {
-   const fetchData = async () => {
-  try {
-    console.log("Fetching live stream alerts data...");
-    
-    // Add this line to check the Supabase client
-    console.log("Supabase client:", supabaseClient);
-    
-    // Order by created_at descending to show newest first
-    console.log("About to execute query with parameters:", { tab: 'live-stream-alerts' });
-    
-    const { data, error } = await supabaseClient
-      .from('content')
-      .select('*')
-      .eq('tab', 'live-stream-alerts')
-      .order('created_at', { ascending: false });
-    
-    // Add more detailed logging
-    console.log("Query completed");
-    console.log("Data returned:", data); // Log the actual data array
-    console.log("Error returned:", error); // Log any errors
-    console.log("Data type:", typeof data);
-   console.log("Data length:", data ? data.length : 'N/A');
-    
-    if (error) throw error;
-    setContent(data || []);
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-    
-    fetchData();
-  }, []);
+  const [userTier] = useState('free'); // Replace with actual user tier from auth context
 
-  function getYouTubeEmbedUrl(url) {
-    if (!url) return '';
-    
-    // Extract video ID using regex to handle different YouTube URL formats
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
-    const match = url.match(regex);
-    
-    if (match && match[1]) {
-      return `https://www.youtube.com/embed/${match[1]}`;
+  useEffect(() => {
+    async function fetchStreams() {
+      try {
+        setLoading(true);
+        // Use the contentService to fetch live stream alerts for the current user's tier
+        const { data, error } = await contentService.getContentByTabAndTier('live-stream-alerts', userTier);
+        
+        console.log('Live stream alerts data:', data);
+        
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        setStreams(data || []);
+      } catch (err) {
+        console.error('Error fetching live stream alerts:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchStreams();
+  }, [userTier]);
+
+  // Helper to extract YouTube video ID
+  const getYoutubeId = (url) => {
+    if (!url) return null;
     
-    // If we couldn't extract the ID, return the original URL
-    return url;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Format time like X (Twitter)
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    
+    if (isToday) {
+      // Format as time for today's posts (e.g., "9:54pm")
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } else {
+      // Format as "Mar 22" for older posts
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+  };
+
+  if (loading) {
+    return <div>Loading live stream alerts...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Live Stream Alerts</h1>
+    <div className="bg-black min-h-screen">
+      <h1 className="text-2xl font-bold p-4">Live Stream Alerts</h1>
       
-      {loading ? (
-        <p>Loading...</p>
-      ) : error ? (
-        <div>
-          <p className="text-red-500">Error: {error}</p>
-        </div>
-      ) : content.length === 0 ? (
-        <div>
-          <p>No upcoming streams yet.</p>
-        </div>
+      {streams.length === 0 ? (
+        <p className="p-4">No upcoming streams yet.</p>
       ) : (
-        <div className="mt-4 space-y-8">
-          {content.map((item) => (
-            <div key={item.id} className="mb-6">
-              <h2 className="text-xl font-semibold">{item.title}</h2>
-              <p className="mt-2">{item.body}</p>
-              
-              {item.media_url && item.media_url.includes('youtube.com') && (
-                <div className="mt-4 aspect-video">
-                  <iframe 
-                    src={getYouTubeEmbedUrl(item.media_url)}
-                    className="w-full h-full"
-                    allowFullScreen
-                    title={item.title}
-                  />
+        <div>
+          {streams.map((stream) => (
+            <div key={stream.id} className="border-b border-gray-800">
+              <div className="p-4">
+                {/* Title and timestamp in same row */}
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-xl font-bold">{stream.title}</h2>
+                  <span className="text-gray-400 text-sm">
+                    {formatTime(stream.created_at)}
+                  </span>
                 </div>
-              )}
+                
+                <p className="mb-3">{stream.body}</p>
+              </div>
               
-              {/* Display regular images if not YouTube */}
-              {item.media_url && !item.media_url.includes('youtube.com') && (
-                <div className="mt-4">
+              {stream.media_url && getYoutubeId(stream.media_url) ? (
+                <div className="overflow-hidden rounded-2xl mx-4 mb-4" style={{ borderRadius: '16px' }}>
+                  <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                    <iframe 
+                      src={`https://www.youtube.com/embed/${getYoutubeId(stream.media_url)}`}
+                      title={stream.title}
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full"
+                      style={{ borderRadius: '16px' }}
+                    ></iframe>
+                  </div>
+                </div>
+              ) : stream.media_url ? (
+                <div className="mx-4 mb-4">
                   <img 
-                    src={item.media_url} 
-                    alt={item.title}
-                    className="max-w-full rounded"
+                    src={stream.media_url} 
+                    alt={stream.title} 
+                    className="rounded-2xl w-full"
+                    style={{ borderRadius: '16px' }}
                   />
                 </div>
-              )}
+              ) : null}
             </div>
           ))}
         </div>
