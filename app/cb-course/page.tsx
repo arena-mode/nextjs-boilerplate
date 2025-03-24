@@ -3,35 +3,35 @@
 import { useState, useEffect } from 'react';
 import contentService from '../utils/contentService';
 
-export default function Shorting() {
-  const [shortingContent, setShortingContent] = useState([]);
+export default function CBCourse() {
+  const [courseContent, setCourseContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userTier] = useState('free'); // Replace with actual user tier from auth context
 
   useEffect(() => {
-    async function fetchShortingContent() {
+    async function fetchCourseContent() {
       try {
         setLoading(true);
-        // Use the contentService to fetch shorting content for the current user's tier
-        const { data, error } = await contentService.getContentByTabAndTier('shorting', userTier);
+        // Use the contentService to fetch course content
+        const { data, error } = await contentService.getContentByTabAndTier('cb-course', userTier);
         
-        console.log('Shorting content data:', data);
+        console.log('CB Course data:', data);
         
         if (error) {
           throw new Error(error.message);
         }
         
-        setShortingContent(data || []);
+        setCourseContent(data || []);
       } catch (err) {
-        console.error('Error fetching shorting content:', err);
+        console.error('Error fetching CB course content:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchShortingContent();
+    fetchCourseContent();
   }, [userTier]);
 
   // Helper to extract YouTube video ID
@@ -69,7 +69,7 @@ export default function Shorting() {
   };
 
   if (loading) {
-    return <div>Loading shorting strategies...</div>;
+    return <div>Loading course content...</div>;
   }
 
   if (error) {
@@ -78,31 +78,13 @@ export default function Shorting() {
 
   return (
     <div className="bg-black min-h-screen">
-      <h1 className="text-2xl font-bold p-4">Shorting</h1>
+      <h1 className="text-2xl font-bold p-4">CB Course</h1>
       
-      {shortingContent.length === 0 ? (
-        <div className="p-4">
-          <div className="border-b border-gray-800 pb-4">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="text-xl font-bold">Shorting Strategy Video</h2>
-            </div>
-            <p className="mb-3">Sample shorting strategy</p>
-            <div className="overflow-hidden rounded-2xl mb-4" style={{ borderRadius: '16px' }}>
-              <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                <iframe 
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                  title="Shorting Video" 
-                  allowFullScreen
-                  className="absolute top-0 left-0 w-full h-full"
-                  style={{ borderRadius: '16px' }}
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </div>
+      {courseContent.length === 0 ? (
+        <p className="p-4">No course content available yet.</p>
       ) : (
         <div>
-          {shortingContent.map((item) => (
+          {courseContent.map((item) => (
             <div key={item.id} className="border-b border-gray-800">
               <div className="p-4">
                 {/* Title and timestamp in same row */}
