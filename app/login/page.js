@@ -1,15 +1,12 @@
-// app/login/page.js
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../context/AuthContext';
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPrefs, setShowPrefs] = useState(false);
   const [notificationPrefs, setNotificationPrefs] = useState({
     'live-stream-alerts': true,
     'crypto-market': true,
@@ -19,46 +16,55 @@ export default function Login() {
     'shorting': true,
     'cb-course': true
   });
-  const [notificationStyle, setNotificationStyle] = useState('alerting');
   
+  const { login, loginWithEmail, register } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     
-    try {
-      // Handle admin login
-      if (email === 'crypto-bellwether.com' && password === 'CryptoBellwether') {
-        // Admin login
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('isAdmin', 'true');
+    if (!email && !password) {
+      setError('Please enter email and password');
+      return;
+    }
+    
+    // Try admin login
+    if (email === 'admin@crypto-bellwether.com' && password === 'CryptoBellwether') {
+      const success = login(password);
+      if (success) {
         router.push('/admin');
         return;
       }
-      
-      // For demo, show notification prefs after login
-      // In production, this would verify credentials with Supabase
-      setShowPrefs(true);
-    } catch (err) {
-      setError('Login failed. Please check your credentials.');
-    } finally {
-      setLoading(false);
+    }
+    
+    // Try regular user login
+    if (email && password) {
+      const { success, error } = await loginWithEmail(email, password);
+      if (success) {
+        router.push('/');
+      } else {
+        setError(error || 'Login failed');
+      }
     }
   };
-
-  const handleSavePreferences = () => {
-    // Save preferences to localStorage for demo
-    // In production, this would save to Supabase
-    localStorage.setItem('notificationPrefs', JSON.stringify(notificationPrefs));
-    localStorage.setItem('notificationStyle', notificationStyle);
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('isAdmin', 'false');
+  
+  const handleRegister = async () => {
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
     
-    router.push('/');
+    const { success, error } = await register(email, password, notificationPrefs);
+    if (success) {
+      // Auto login after registration
+      await loginWithEmail(email, password);
+      router.push('/');
+    } else {
+      setError(error || 'Registration failed');
+    }
   };
-
+  
   const toggleNotification = (tab) => {
     setNotificationPrefs(prev => ({
       ...prev,
@@ -67,118 +73,86 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto my-10 p-6 bg-black border border-gray-800 rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">
-        {showPrefs ? 'Notification Preferences' : 'Sign In'}
-      </h1>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-black border border-gray-800 rounded-lg">
+      <h2 className="text-2xl font-bold mb-6 text-white">Sign In</h2>
       
       {error && (
-        <div className="mb-4 p-3 bg-red-900/50 border border-red-800 text-red-200 rounded">
+        <div className="mb-4 p-3 bg-red-900/50 text-red-200 rounded-md text-sm">
           {error}
         </div>
       )}
       
-      {!showPrefs ? (
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label className="block text-gray-400 mb-2">Email</label>
-            <input 
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 bg-gray-900 border border-gray-700 rounded text-white"
-              required
-            />
-          </div>
+      <form onSubmit={handleLogin}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-400 mb-1">
+            Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 bg-gray-900 border border-gray-700 rounded-md text-white"
+            placeholder="your@email.com"
+          />
+        </div>
+        
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-400 mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 bg-gray-900 border border-gray-700 rounded-md text-white"
+            placeholder="••••••••"
+          />
+        </div>
+        
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-gray-400 mb-2">
+            Notification Preferences
+          </h3>
           
-          <div className="mb-6">
-            <label className="block text-gray-400 mb-2">Password</label>
-            <input 
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 bg-gray-900 border border-gray-700 rounded text-white"
-              required
-            />
+          <div className="space-y-2">
+            {['live-stream-alerts', 'crypto-market', 'videos', 'posts', 'wallet-alerts', 'shorting', 'cb-course'].map(tab => (
+              <div key={tab} className="flex items-center">
+                <label className="flex items-center cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={notificationPrefs[tab]}
+                      onChange={() => toggleNotification(tab)}
+                    />
+                    <div className={`block w-10 h-6 rounded-full ${notificationPrefs[tab] ? 'bg-blue-400' : 'bg-gray-600'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition ${notificationPrefs[tab] ? 'transform translate-x-4' : ''}`}></div>
+                  </div>
+                  <div className="ml-3 text-gray-300 capitalize">
+                    {tab.replace(/-/g, ' ')}
+                  </div>
+                </label>
+              </div>
+            ))}
           </div>
-          
+        </div>
+        
+        <div className="flex space-x-3">
           <button
             type="submit"
-            disabled={loading}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded disabled:opacity-50"
+            className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            Sign In
           </button>
-        </form>
-      ) : (
-        <div>
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-3">Notification Style</h2>
-            <div className="flex border border-gray-700 rounded overflow-hidden">
-              <button
-                onClick={() => setNotificationStyle('silent')}
-                className={`flex-1 py-2 ${notificationStyle === 'silent' ? 'bg-blue-600' : 'bg-gray-800'}`}
-              >
-                Silent
-              </button>
-              <button
-                onClick={() => setNotificationStyle('alerting')}
-                className={`flex-1 py-2 ${notificationStyle === 'alerting' ? 'bg-blue-600' : 'bg-gray-800'}`}
-              >
-                Sound Alerts
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Choose how you want to be notified</p>
-          </div>
-          
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-3">Notify Me About</h2>
-            <div className="space-y-3 border border-gray-700 rounded p-4">
-              {Object.keys(notificationPrefs).map(tab => (
-                <div key={tab} className="flex items-center justify-between">
-                  <span className="capitalize">{tab.replace(/-/g, ' ')}</span>
-                  <button
-                    onClick={() => toggleNotification(tab)}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                      notificationPrefs[tab] ? 'bg-blue-600' : 'bg-gray-700'
-                    }`}
-                  >
-                    <div className={`bg-white w-4 h-4 rounded-full transform transition-transform ${
-                      notificationPrefs[tab] ? 'translate-x-6' : ''
-                    }`} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleSavePreferences}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded"
-            >
-              Save Preferences
-            </button>
-            <button
-              onClick={() => setShowPrefs(false)}
-              className="w-full py-2 px-4 bg-transparent hover:bg-gray-800 border border-gray-700 text-white rounded"
-            >
-              Back to Login
-            </button>
-          </div>
-        </div>
-      )}
-      
-      {showPrefs && (
-        <div className="mt-6 pt-6 border-t border-gray-800">
           <button
-            onClick={() => router.push('/')}
-            className="w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-white rounded"
+            type="button"
+            onClick={handleRegister}
+            className="flex-1 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-md"
           >
-            Log Out
+            Register
           </button>
         </div>
-      )}
+      </form>
     </div>
   );
 }
