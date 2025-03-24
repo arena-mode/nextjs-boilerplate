@@ -1,6 +1,11 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "./context/AuthContext";
+import NotificationDropdown from "./components/NotificationDropdown";
+import NavigationBar from "./components/Navigation";
+import { useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,39 +22,50 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <header className="flex justify-between p-4 bg-black text-white">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/goat.png" 
-              alt="Crypto Bellwether" 
-              width={32} 
-              height={32} 
-              className="rounded-full"
-            />
-            <span className="font-bold text-xl text-white">Crypto Bellwether</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Free Tier</span>
-            <a href="/admin" className="text-xs opacity-50 hover:opacity-100">Admin</a>
-            <span>🔔</span>
-          </div>
-        </header>
-        
-        <div className="overflow-x-auto">
-          <nav className="flex whitespace-nowrap">
-            <a href="/" className="px-4 py-3 flex-shrink-0">Home</a>
-            <a href="/live-stream-alerts" className="px-4 py-3 flex-shrink-0">Live Stream Alerts</a>
-            <a href="/crypto-market" className="px-4 py-3 flex-shrink-0">Crypto Market</a>
-            <a href="/videos" className="px-4 py-3 flex-shrink-0">Videos</a>
-            <a href="/posts" className="px-4 py-3 flex-shrink-0">Posts</a>
-            <a href="/wallet-alerts" className="px-4 py-3 flex-shrink-0">Wallet Alerts</a>
-            <a href="/shorting" className="px-4 py-3 flex-shrink-0">Shorting</a>
-            <a href="/cb-course" className="px-4 py-3 flex-shrink-0">CB Course</a>
-          </nav>
-        </div>
-        
-        <main className="p-4">{children}</main>
+        <AuthProvider>
+          <HeaderWithClient />
+          <NavigationBar />
+          <main className="p-4">{children}</main>
+        </AuthProvider>
       </body>
     </html>
+  );
+}
+
+// Client component for header with interactive elements
+'use client';
+function HeaderWithClient() {
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  
+  return (
+    <header className="flex justify-between p-4 bg-black text-white">
+      <div className="flex items-center gap-2">
+        <img 
+          src="/goat.png" 
+          alt="Crypto Bellwether" 
+          width={32} 
+          height={32} 
+          className="rounded-full"
+        />
+        <span className="font-bold text-xl text-white">Crypto Bellwether</span>
+      </div>
+      <div className="flex items-center gap-4 relative">
+        <span>Free Tier</span>
+        <a href="/login" className="text-xs hover:opacity-100">Sign In</a>
+        <button 
+          onClick={() => setNotificationOpen(!notificationOpen)}
+          className="relative"
+          aria-label="Notifications"
+        >
+          <span className="text-xl">🔔</span>
+          {/* We can add an indicator for unread notifications here */}
+        </button>
+        
+        <NotificationDropdown 
+          isOpen={notificationOpen} 
+          onClose={() => setNotificationOpen(false)} 
+        />
+      </div>
+    </header>
   );
 }
