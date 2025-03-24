@@ -1,43 +1,56 @@
 import { NextResponse } from 'next/server';
-import supabaseClient from '../../../utils/supabaseClient';
 
 export async function GET() {
   try {
-    // First, fetch videos from YouTube
+    // Supabase credentials
+    const SUPABASE_URL = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
+    
+    // YouTube API parameters
     const YOUTUBE_API_KEY = 'AIzaSyAK9AmKzRz10Y1GjQVDzMU7nC0Sw0LjTxk';
     const CHANNEL_ID = 'UC5exs6N3ojtspNCkF9qfpGg';
     
-    const url = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=10&type=video`;
+    // Fetch videos from YouTube
+    const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=10&type=video`;
+    const ytResponse = await fetch(youtubeUrl);
     
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`YouTube API error: ${response.status}`);
+    if (!ytResponse.ok) {
+      throw new Error(`YouTube API error: ${ytResponse.status}`);
     }
     
-    const data = await response.json();
+    const ytData = await ytResponse.json();
     
-    // Format the videos
-    const videos = data.items.map(item => {
-      return {
+    // Process videos
+    const results = [];
+    
+    for (const item of ytData.items) {
+      const video = {
         videoId: item.id.videoId,
         title: item.snippet.title,
         description: item.snippet.description,
         publishedAt: item.snippet.publishedAt,
         url: `https://www.youtube.com/watch?v=${item.id.videoId}`
       };
-    });
-    
-    // Store videos to Supabase
-    const results = [];
-    
-    for (const video of videos) {
-      // Check if video already exists
-      const { data: existingVideos } = await supabaseClient
-        .from('content')
-        .select('id')
-        .eq('media_url', video.url)
-        .limit(1);
+      
+      // Check if video already exists in Supabase
+      const checkUrl = `${SUPABASE_URL}/rest/v1/content?media_url=eq.${encodeURIComponent(video.url)}&select=id`;
+      const checkResponse = await fetch(checkUrl, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      
+      if (!checkResponse.ok) {
+        results.push({
+          videoId: video.videoId,
+          status: 'error',
+          message: `Failed to check for existing video: ${checkResponse.status}`
+        });
+        continue;
+      }
+      
+      const existingVideos = await checkResponse.json();
       
       // Skip if video already exists
       if (existingVideos && existingVideos.length > 0) {
@@ -50,9 +63,16 @@ export async function GET() {
       }
       
       // Add to content table
-      const { data: newVideo, error } = await supabaseClient
-        .from('content')
-        .insert({
+      const insertUrl = `${SUPABASE_URL}/rest/v1/content`;
+      const insertResponse = await fetch(insertUrl, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
           title: video.title,
           body: video.description,
           media_url: video.url,
@@ -62,26 +82,28 @@ export async function GET() {
           notified: false,
           send_notification: false
         })
-        .select();
+      });
       
-      if (error) {
+      if (!insertResponse.ok) {
         results.push({
           videoId: video.videoId,
           status: 'error',
-          message: error.message
+          message: `Failed to insert video: ${insertResponse.status}`
         });
-      } else {
-        results.push({
-          videoId: video.videoId,
-          status: 'added',
-          contentId: newVideo[0].id
-        });
+        continue;
       }
+      
+      const newVideo = await insertResponse.json();
+      results.push({
+        videoId: video.videoId,
+        status: 'added',
+        contentId: newVideo[0].id
+      });
     }
     
     return NextResponse.json({
       success: true,
-      message: `Processed ${videos.length} videos`,
+      message: `Processed ${ytData.items.length} videos`,
       results
     });
   } catch (error) {
