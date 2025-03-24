@@ -85,34 +85,36 @@ export default function Videos() {
       ) : (
         <div>
           {videos.map((video) => (
-            <div key={video.id} className="border-b border-gray-800 p-4">
-              <div className="text-gray-400 mb-1">
-                {formatTime(video.created_at)}
+            <div key={video.id} className="border-b border-gray-800">
+              <div className="p-4">
+                <div className="text-gray-400 mb-1">
+                  {formatTime(video.created_at)}
+                </div>
+                
+                <h2 className="text-xl font-bold mb-1">{video.title}</h2>
+                
+                <p className="mb-3">{video.body}</p>
               </div>
               
-              <h2 className="text-xl font-bold mb-1">{video.title}</h2>
-              
-              <p className="mb-3">{video.body}</p>
-              
               {video.media_url && getYoutubeId(video.media_url) ? (
-                <div className="mb-3">
-                  <div className="rounded-xl overflow-hidden">
+                <div className="overflow-hidden rounded-2xl mx-4 mb-4" style={{ borderRadius: '16px' }}>
+                  <div className="relative" style={{ paddingBottom: '56.25%' }}>  {/* 16:9 aspect ratio */}
                     <iframe 
-                      width="100%" 
-                      height="400"
                       src={`https://www.youtube.com/embed/${getYoutubeId(video.media_url)}`}
                       title={video.title}
                       allowFullScreen
-                      className="w-full"
+                      className="absolute top-0 left-0 w-full h-full"
+                      style={{ borderRadius: '16px' }}
                     ></iframe>
                   </div>
                 </div>
               ) : video.media_url ? (
-                <div className="mb-3">
+                <div className="mx-4 mb-4">
                   <img 
                     src={video.media_url} 
                     alt={video.title} 
-                    className="rounded-xl w-full"
+                    className="rounded-2xl w-full"
+                    style={{ borderRadius: '16px' }}
                   />
                 </div>
               ) : null}
