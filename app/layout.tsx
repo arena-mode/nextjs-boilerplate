@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import HeaderWithBell from "./components/HeaderWithBell";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,23 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <header className="flex justify-between p-4 bg-black text-white">
-          <div className="flex items-center gap-2">
-            <img 
-              src="/goat.png" 
-              alt="Crypto Bellwether" 
-              width={32} 
-              height={32} 
-              className="rounded-full"
-            />
-            <span className="font-bold text-xl text-white">Crypto Bellwether</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Free Tier</span>
-            <a href="/admin" className="text-xs opacity-50 hover:opacity-100">Admin</a>
-            <span>🔔</span>
-          </div>
-        </header>
+        <HeaderWithBell />
         
         <div className="overflow-x-auto">
           <nav className="flex whitespace-nowrap">
