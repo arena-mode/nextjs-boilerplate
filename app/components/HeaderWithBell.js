@@ -1,4 +1,4 @@
-// components/HeaderWithBell.js
+// components/HeaderWithBell.js (updated)
 'use client';
 
 import { useState, useEffect } from 'react';
