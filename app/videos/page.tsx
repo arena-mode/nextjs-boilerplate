@@ -87,11 +87,13 @@ export default function Videos() {
           {videos.map((video) => (
             <div key={video.id} className="border-b border-gray-800">
               <div className="p-4">
-                <div className="text-gray-400 mb-1">
-                  {formatTime(video.created_at)}
+                {/* Title and timestamp in same row */}
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-xl font-bold">{video.title}</h2>
+                  <span className="text-gray-400 text-sm">
+                    {formatTime(video.created_at)}
+                  </span>
                 </div>
-                
-                <h2 className="text-xl font-bold mb-1">{video.title}</h2>
                 
                 <p className="mb-3">{video.body}</p>
               </div>
