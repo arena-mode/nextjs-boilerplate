@@ -1,12 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
-import Link from 'next/link';
 
 export default function HeaderWithBell() {
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
   
   return (
     <header className="flex justify-between p-4 bg-black text-white">
@@ -21,13 +18,11 @@ export default function HeaderWithBell() {
         <span className="font-bold text-xl text-white">Crypto Bellwether</span>
       </div>
       <div className="flex items-center gap-4 relative">
-        <span>{user?.tier || 'Free Tier'}</span>
-        <Link href="/login" className="text-xs opacity-50 hover:opacity-100">
-          {isAuthenticated ? (user?.isAdmin ? 'Admin' : 'Account') : 'Sign In'}
-        </Link>
+        <span>Free Tier</span>
+        <a href="/login" className="text-xs opacity-50 hover:opacity-100">Sign In</a>
         <button 
           onClick={() => setNotificationOpen(!notificationOpen)}
-          className="text-xl cursor-pointer"
+          className="text-xl"
           aria-label="Notifications"
         >
           🔔
