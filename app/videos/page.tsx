@@ -45,38 +45,36 @@ export default function Videos() {
   };
 
   if (loading) {
-    return <div className="p-4">Loading videos...</div>;
+    return <div>Loading videos...</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
+    return <div className="text-red-500">Error: {error}</div>;
   }
 
   return (
-    <div className="p-4">
+    <div>
       <h1 className="text-2xl font-bold">Videos</h1>
       
       {videos.length === 0 ? (
         <p>No videos available yet.</p>
       ) : (
-        <div className="mt-4 space-y-6">
+        <div>
           {videos.map((video) => (
-            <div key={video.id} className="border p-4 rounded">
-              <h2 className="text-xl font-bold mb-2">{video.title}</h2>
-              
-              {video.body && (
-                <p className="mb-4">{video.body}</p>
-              )}
+            <div key={video.id} className="border border-gray-700 mb-4">
+              <div className="p-4">
+                <h2 className="text-xl font-bold">{video.title}</h2>
+                <p>{video.body}</p>
+              </div>
               
               {video.media_url && getYoutubeId(video.media_url) && (
-                <div className="aspect-w-16 aspect-h-9">
-                  <iframe 
-                    className="w-full h-64"
-                    src={`https://www.youtube.com/embed/${getYoutubeId(video.media_url)}`}
-                    title={video.title}
-                    allowFullScreen
-                  ></iframe>
-                </div>
+                <iframe 
+                  width="100%" 
+                  height="500"
+                  src={`https://www.youtube.com/embed/${getYoutubeId(video.media_url)}`}
+                  title={video.title}
+                  allowFullScreen
+                ></iframe>
               )}
             </div>
           ))}
