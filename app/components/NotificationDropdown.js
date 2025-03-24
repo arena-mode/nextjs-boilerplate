@@ -1,5 +1,6 @@
 // components/NotificationDropdown.js
 'use client';
+
 import { useState } from 'react';
 
 export default function NotificationDropdown({ isOpen, onClose }) {
@@ -61,7 +62,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
 }
 
 // Format time like X (Twitter)
-const formatTime = (dateString) => {
+function formatTime(dateString) {
   if (!dateString) return '';
   
   const date = new Date(dateString);
@@ -74,4 +75,4 @@ const formatTime = (dateString) => {
   if (diff < 604800000) return `${Math.floor(diff / 86400000)}d`;
   
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
+}
