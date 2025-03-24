@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import supabaseClient from '../../../utils/supabaseClient';
-import youtubeService from '../../../utils/youtubeService';
+import supabaseClient from '@/utils/supabaseClient';
+import youtubeService from '@/utils/youtubeService';
 
 export async function GET() {
   try {
@@ -9,7 +9,7 @@ export async function GET() {
     
     return NextResponse.json({
       success: true,
-      message: `Fetched videos from YouTube channel`,
+      message: 'Fetched videos from YouTube channel',
       details: result
     });
   } catch (error) {
