@@ -13,16 +13,19 @@ export default function Videos() {
     async function fetchVideos() {
       try {
         setLoading(true);
-        // Use the contentService to fetch videos for the current user's tier
+        
+        // Fetching videos logic here
         const { data, error } = await contentService.getContentByTabAndTier('videos', userTier);
         
-        console.log('Videos data:', data);
-        
+        // Log the fetched data
+        console.log('Fetching videos', data); 
+
         if (error) {
           throw new Error(error.message);
         }
-        
+
         setVideos(data || []);
+        
       } catch (err) {
         console.error('Error fetching videos:', err);
         setError(err.message);
@@ -37,21 +40,21 @@ export default function Videos() {
   // Helper to extract YouTube video ID
   const getYoutubeId = (url) => {
     if (!url) return null;
-    
+
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
-    
+
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
   // Format time like X (Twitter)
   const formatTime = (dateString) => {
     if (!dateString) return '';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
-    
+
     if (isToday) {
       // Format as time for today's posts (e.g., "9:54pm")
       return date.toLocaleTimeString('en-US', { 
@@ -79,7 +82,7 @@ export default function Videos() {
   return (
     <div className="bg-black min-h-screen">
       <h1 className="text-2xl font-bold p-4">Videos</h1>
-      
+
       {videos.length === 0 ? (
         <p className="p-4">No videos available yet.</p>
       ) : (
@@ -94,13 +97,13 @@ export default function Videos() {
                     {formatTime(video.created_at)}
                   </span>
                 </div>
-                
+
                 <p className="mb-3">{video.body}</p>
               </div>
-              
+
               {video.media_url && getYoutubeId(video.media_url) ? (
                 <div className="overflow-hidden rounded-2xl mx-4 mb-4" style={{ borderRadius: '16px' }}>
-                  <div className="relative" style={{ paddingBottom: '56.25%' }}>  {/* 16:9 aspect ratio */}
+                  <div className="relative" style={{ paddingBottom: '56.25%' }}> {/* 16:9 aspect ratio */}
                     <iframe 
                       src={`https://www.youtube.com/embed/${getYoutubeId(video.media_url)}`}
                       title={video.title}
@@ -120,6 +123,7 @@ export default function Videos() {
                   />
                 </div>
               ) : null}
+
             </div>
           ))}
         </div>
