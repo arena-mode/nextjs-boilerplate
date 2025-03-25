@@ -1,5 +1,7 @@
 // app/test/page.js
 
+'use client'; // This line tells Next.js that this is a client component
+
 import { useEffect, useState } from 'react';
 import { generateCode } from '../../utils/vercelAiProvider'; // Adjust the path as necessary
 
