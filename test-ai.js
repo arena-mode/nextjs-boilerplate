@@ -4,6 +4,8 @@ import { openai } from '@ai-sdk/openai';
 
 async function testAI() {
     try {
+        console.log('Invoking AI model...');  // Added log
+
         const { text } = await generateText({
             model: openai('gpt-4o'),
             system: 'You are a helpful assistant.',
