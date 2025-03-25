@@ -13,7 +13,7 @@
     "react-dom": "^19.0.0",
     "next": "^15.2.3",
     "@supabase/supabase-js": "^2.39.0",
-    "@gel/vercel-ai-provider": "^0.1.0"  // Add this if it is not present
+    "@gel/vercel-ai-provider": "^0.1.0" 
   },
   "devDependencies": {
     "typescript": "^5",
