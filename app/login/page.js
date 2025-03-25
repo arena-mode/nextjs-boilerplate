@@ -32,4 +32,4 @@ export default function LoginPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2
+           className="w-full p-2"
