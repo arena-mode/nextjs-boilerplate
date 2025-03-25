@@ -1,11 +1,11 @@
 // utils/vercelAiProvider.js
 
-import { createAI } from '@gel/vercel-ai-provider'; // Import the SDK function
+import * as VercelAI from '@gel/vercel-ai-provider'; // Import everything to see available exports
 
 // Initialize the AI with your API key
-const ai = createAI({
-    apiKey: process.env.YOUR_API_KEY, // Correctly reference your environment variable
-    model: 'anthropic' // Specify the model you want to use
+const ai = VercelAI.createAI({  // Use VercelAI to access the function
+    apiKey: process.env.YOUR_API_KEY, // Your API key
+    model: 'anthropic' // Specify the model
 });
 
 // Function to generate code
