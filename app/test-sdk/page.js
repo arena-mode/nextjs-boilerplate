@@ -1,12 +1,12 @@
-"use client";  // Add this as the first line
+"use client"; // Ensures it's a client-side component
+export const dynamic = 'force-dynamic'; // Forces runtime rendering, fixing the pre-rendering issue
 
 import { useEffect, useState } from 'react';
 import { createGel } from '@gel/vercel-ai-provider';
-app/test-sdk.js
 
 const ai = createGel({
-    apiKey: process.env.YOUR_API_KEY, // Replace with your actual API key
-    model: 'anthropic' // Specify the model for testing
+    apiKey: process.env.YOUR_API_KEY,
+    model: 'anthropic',
 });
 
 export default function TestSDK() {
@@ -17,26 +17,26 @@ export default function TestSDK() {
     useEffect(() => {
         const testSDK = async () => {
             setLoading(true);
-            const prompt = "What is the capital of France?"; // A simple prompt for testing
+            const prompt = "What is the capital of France?";
             try {
-                const sdkResponse = await ai.generateText({ prompt }); // Call the SDK directly
-                setResponse(sdkResponse); // Set the response from the SDK
+                const sdkResponse = await ai.generateText({ prompt });
+                setResponse(sdkResponse);
             } catch (err) {
-                setError(err.message); // Capture any errors
+                setError(err.message);
             } finally {
-                setLoading(false); // Update loading state
+                setLoading(false);
             }
         };
 
-        testSDK(); // Call the test function
+        testSDK();
     }, []);
 
     return (
         <div style={{ padding: '20px' }}>
             <h1>SDK Test</h1>
             {loading && <p>Loading...</p>}
-            {error && <p>Error: {error}</p>}
-            {response && <p>Response: {JSON.stringify(response)}</p>} {/* Display the API response */}
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+            {response && <p>Response: {JSON.stringify(response)}</p>}
         </div>
     );
 }
