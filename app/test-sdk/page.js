@@ -4,9 +4,6 @@ import { useEffect, useState } from 'react';
 import { createGel } from '@gel/vercel-ai-provider';
 app/test-sdk.js
 
-import { useEffect, useState } from 'react';
-import { createGel } from '@gel/vercel-ai-provider'; // Import the SDK function
-
 const ai = createGel({
     apiKey: process.env.YOUR_API_KEY, // Replace with your actual API key
     model: 'anthropic' // Specify the model for testing
