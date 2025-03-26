@@ -1,6 +1,5 @@
 // Set a dummy DSN so that createGel resolves the connection parameters.
 // Replace the dummy DSN with your project's actual DSN if needed.
-process.env.GEL_DSN = "gel://dummy:dummy@localhost:5432/dummy";
 
 const { createGel } = require("@gel/vercel-ai-provider");
 
