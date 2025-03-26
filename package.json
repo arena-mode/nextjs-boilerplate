@@ -9,12 +9,15 @@
     "start": "next start",
     "lint": "next lint"
   },
-  "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "^15.2.3",
-    "@supabase/supabase-js": "^2.39.0",
-    "@gel/vercel-ai-provider": "^0.1.0" 
+ "dependencies": {
+  "react": "^19.0.0",
+  "react-dom": "^19.0.0",
+  "next": "^15.2.3",
+  "@supabase/supabase-js": "^2.39.0",
+  "@gel/vercel-ai-provider": "^0.1.0",
+  "ai": "^2.2.0",
+  "@ai-sdk/anthropic": "^0.1.0"
+}
   },
   "devDependencies": {
     "typescript": "^5",
