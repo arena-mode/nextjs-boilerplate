@@ -1,45 +1,33 @@
 // app/api/anthropic/route.js
-import { StreamingTextResponse } from 'ai';
+import { StreamingTextResponse, Message } from 'ai';
 import { createGel } from '@gel/vercel-ai-provider';
 
+// Initialize the Anthropic client
 const anthropicClient = createGel({
   apiKey: process.env.ANTHROPIC_API_KEY
 });
 
-export async function POST(request) {
+export async function POST(req) {
   try {
-    const body = await request.json();
-    const { messages } = body;
-    
-    if (!messages || !Array.isArray(messages)) {
-      return Response.json(
-        { error: 'Messages array is required' },
-        { status: 400 }
-      );
-    }
+    // Extract the messages from the request body
+    const { messages } = await req.json();
 
-    // Format messages for Anthropic API
-    const formattedMessages = messages.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
-      content: msg.content
-    }));
-
-    // Call Anthropic API with streaming enabled
+    // Create a response stream from Anthropic
     const response = await anthropicClient.messages.create({
       model: 'claude-3-opus-20240229',
-      messages: formattedMessages,
-      max_tokens: 1000,
+      messages: messages,
+      max_tokens: 1500,
       temperature: 0.7,
-      stream: true,
+      stream: true
     });
 
     // Return a streaming response
-    return new StreamingTextResponse(response);
+    return new StreamingTextResponse(response.data.stream);
   } catch (error) {
-    console.error('Error calling Anthropic API:', error);
-    return Response.json(
-      { error: error.message || 'Something went wrong' },
-      { status: 500 }
-    );
+    console.error('Error calling Anthropic:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Unknown error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
