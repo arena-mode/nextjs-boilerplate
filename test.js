@@ -1,28 +1,33 @@
-// Set a dummy DSN so that createGel resolves the connection parameters.
-// Replace the dummy DSN with your project's actual DSN if needed.
-
+// Use the `createGel` function from the SDK
 const { createGel } = require("@gel/vercel-ai-provider");
 
-// Initialize the Gel client with your API key and choose the model.
-// Note: We use a new variable name ("gelClientInstance") to avoid redeclaration errors.
-const gelClientInstance = createGel({
-  apiKey: "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",
-  model: "anthropic"
+// Set relevant environment variables or configuration
+const apiKey = "sk-ant-api03-mxK..."; // Replace with your actual API key
+// Optional: If your environment uses DSN information
+process.env.GEL_DSN = "gel://dummy:dummy@localhost:5432/dummy";
+
+// Initialize the Gel client
+const client = createGel({
+  apiKey, // Your API key
+  model: "anthropic", // AI model
 });
 
-// Log the client to verify configuration.
-console.log(gelClientInstance);
-
-// Optionally, define an async function to test client functionality.
-// (Please consult the documentation to ensure that generateText is the correct method.)
+// Test an AI request
 async function testGelClient() {
+  console.log("⚡ Running GEL SDK test...");
+
   try {
+    // Define a simple test prompt
     const prompt = "What is the capital of France?";
-    // Uncomment the following line if the client is expected to have a generateText method.
-    // const response = await gelClientInstance.generateText({ prompt });
-    // console.log("AI Response:", response);
+    
+    // Ensure you use the correct method provided by the SDK for generating text
+    const response = await client.generateText({ prompt });
+    
+    // Log the response from the AI
+    console.log("✅ Success! AI Response:", response);
   } catch (error) {
-    console.error("Error using the Gel client:", error.message);
+    // Catch and log any errors during the test
+    console.error("❌ Error during GEL SDK test:", error.message);
   }
 }
 
