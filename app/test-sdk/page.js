@@ -1,57 +1,83 @@
 // app/test-sdk/page.js
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createGel } from '@gel/vercel-ai-provider'; // Changed from createHttpClient to createGel
+import { useState } from 'react';
 
 export default function TestSDKPage() {
-  const [result, setResult] = useState('Testing SDK...');
+  const [prompt, setPrompt] = useState('Tell me a short story about a robot learning to paint.');
+  const [response, setResponse] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function testSDK() {
-      try {
-        const apiKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
-        
-        if (!apiKey) {
-          throw new Error('API key is not set in environment variables');
-        }
-        
-        // Use createGel instead of createHttpClient
-        const client = createGel({
-          apiKey
-        });
-        
-        // Test simple generation
-        const response = await client.generate({
-          model: 'claude-3-opus-20240229',
-          prompt: 'Hello, world!',
-          maxTokens: 100,
-        });
-        
-        setResult(JSON.stringify(response, null, 2));
-      } catch (err) {
-        console.error('Error testing SDK:', err);
-        setError(err.message || String(err));
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const res = await fetch('/api/anthropic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          maxTokens: 500,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong');
       }
+      
+      setResponse(data.result);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    testSDK();
-  }, []);
+  }
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">SDK Test Page</h1>
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Anthropic API Test</h1>
       
-      {error ? (
-        <div className="p-4 bg-red-100 text-red-700 rounded">
-          <h2 className="font-bold">Error:</h2>
-          <p>{error}</p>
+      <form onSubmit={handleSubmit} className="mb-6">
+        <div className="mb-4">
+          <label className="block mb-2">Enter your prompt:</label>
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            className="w-full p-2 border rounded"
+            rows={4}
+          />
         </div>
-      ) : (
-        <pre className="p-4 bg-gray-100 rounded overflow-auto">
-          {result}
-        </pre>
+        
+        <button
+          type="submit"
+          disabled={isLoading || !prompt.trim()}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-blue-300"
+        >
+          {isLoading ? 'Processing...' : 'Submit'}
+        </button>
+      </form>
+      
+      {error && (
+        <div className="p-4 bg-red-100 text-red-700 rounded mb-4">
+          <p><strong>Error:</strong> {error}</p>
+        </div>
+      )}
+      
+      {response && (
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-2">Response:</h2>
+          <div className="p-4 bg-gray-100 rounded whitespace-pre-wrap">
+            {response}
+          </div>
+        </div>
       )}
     </div>
   );
