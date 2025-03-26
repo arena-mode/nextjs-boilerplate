@@ -1,4 +1,8 @@
-// app/test-sdk.js
+"use client";  // Add this as the first line
+
+import { useEffect, useState } from 'react';
+import { createGel } from '@gel/vercel-ai-provider';
+app/test-sdk.js
 
 import { useEffect, useState } from 'react';
 import { createGel } from '@gel/vercel-ai-provider'; // Import the SDK function
