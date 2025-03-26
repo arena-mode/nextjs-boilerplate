@@ -1,6 +1,6 @@
 // app/api/chat/route.js
 import { StreamingTextResponse } from 'ai';
-import { AnthropicStream } from 'ai';
+import { supabaseClient } from '@/utils/supabase-client';
 
 export const runtime = 'edge';
 
