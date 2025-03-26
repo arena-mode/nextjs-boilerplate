@@ -16,7 +16,7 @@
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
-    "eslint": "^8.50.0", // Downgraded ESLint for compatibility
+    "eslint": "^8.50.0", 
     "eslint-config-next": "14.2.26",
     "typescript": "^5.3.3",
     "@vercel/sdk": "^3.0.0",
