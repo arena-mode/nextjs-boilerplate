@@ -1,11 +1,13 @@
-"use client"; // Ensures it's a client-side component
-export const dynamic = 'force-dynamic'; // Forces runtime rendering, fixing the pre-rendering issue
+"use client"; // Ensures it runs on the client-side
+
+export const dynamic = 'force-dynamic'; // Avoid server-side pre-rendering issues
 
 import { useEffect, useState } from 'react';
-import { createGel } from '@gel/vercel-ai-provider';
+
+import { createGel } from '@gel/vercel-ai-provider'; // Replace with correct export name if needed
 
 const ai = createGel({
-    apiKey: process.env.YOUR_API_KEY,
+    apiKey: process.env.YOUR_API_KEY, // Replace with your environment variable
     model: 'anthropic',
 });
 
