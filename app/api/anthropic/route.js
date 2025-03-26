@@ -12,26 +12,33 @@ export async function POST(request) {
   try {
     // Parse the incoming request
     const body = await request.json();
-    const { prompt, maxTokens = 500 } = body;
+    const { messages, maxTokens = 1000, temperature = 0.7 } = body;
     
-    if (!prompt) {
+    if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
-        { error: 'Prompt is required' },
+        { error: 'Messages array is required' },
         { status: 400 }
       );
     }
     
-    // Call Anthropic API
-    const response = await anthropicClient.generate({
-      model: 'claude-3-opus-20240229', // You can change the model as needed
-      prompt,
-      maxTokens,
+    // Format messages for Anthropic API
+    const formattedMessages = messages.map(msg => ({
+      role: msg.role, // 'user' or 'assistant'
+      content: msg.content
+    }));
+    
+    // Call Anthropic API with conversation history
+    const response = await anthropicClient.messages.create({
+      model: 'claude-3-opus-20240229',
+      messages: formattedMessages,
+      max_tokens: maxTokens,
+      temperature,
     });
     
-    // Return the response
     return NextResponse.json({
       success: true,
-      result: response.text || response,
+      result: response.content?.[0]?.text || '',
+      usage: response.usage || null,
     });
     
   } catch (error) {
