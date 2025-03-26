@@ -1,7 +1,7 @@
 import { createGel } from "@gel/vercel-ai-provider"; // Correctly import createGel
 
 const client = createGel({
-  apiKey: "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", // Replace with your API key
+  apiKey: "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", // Replace this with your actual API key
   model: "anthropic", // Specify the AI model
 });
 
@@ -17,5 +17,4 @@ async function runTest() {
   }
 }
 
-// Call the test function
 runTest();
