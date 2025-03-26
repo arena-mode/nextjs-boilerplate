@@ -9,15 +9,15 @@
     "start": "next start",
     "lint": "next lint"
   },
- "dependencies": {
-  "react": "^19.0.0",
-  "react-dom": "^19.0.0",
-  "next": "^15.2.3",
-  "@supabase/supabase-js": "^2.39.0",
-  "@gel/vercel-ai-provider": "^0.1.0",
-  "ai": "^2.2.0",
-  "@ai-sdk/anthropic": "^0.1.0"
-}
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "next": "^15.2.3",
+    "@supabase/supabase-js": "^2.39.0",
+    "@gel/vercel-ai-provider": "^0.1.0",
+    "ai": "^2.2.0",
+    "@ai-sdk/anthropic": "^0.1.0",
+    "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5",
@@ -25,6 +25,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31"
+  },
+  "engines": {
+    "node": ">=18.17.0"
   }
 }
