@@ -1,26 +1,29 @@
-"use client"; // Ensures the component is client-side only
+"use client"; // Ensures this runs only on the client-side
 
 import { useEffect, useState } from "react";
-import { createHttpClient } from "@gel/vercel-ai-provider"; // Use HTTP Client for browsers
+import { createHttpClient } from "@gel/vercel-ai-provider"; // Correctly using `createHttpClient`
 
 export default function TestSDK() {
-  const [response, setResponse] = useState(null); // To store API responses
-  const [loading, setLoading] = useState(false); // For loading state
-  const [error, setError] = useState(null); // To capture errors
+  const [response, setResponse] = useState(null); // Stores API response
+  const [loading, setLoading] = useState(false); // Loading state
+  const [error, setError] = useState(null); // Captures errors
 
   useEffect(() => {
     const runTest = async () => {
       setLoading(true);
-      const httpClient = createHttpClient({
-        apiKey: process.env.NEXT_PUBLIC_GEL_API_KEY, // Use NEXT_PUBLIC for browser compatibility
+
+      // Use `createHttpClient` with proper API key
+      const client = createHttpClient({
+        apiKey: process.env.NEXT_PUBLIC_GEL_API_KEY, // Ensure it's in the environment variables
         model: "anthropic",
       });
 
       try {
-        const result = await httpClient.generateText({
+        const result = await client.generateText({
           prompt: "What is the capital of France?",
         });
-        setResponse(result); // Set the response data
+        setResponse(result); // Store the AI's response
+        console.log("AI Response:", result);
       } catch (err) {
         console.error("Error:", err);
         setError(err.message);
@@ -29,7 +32,7 @@ export default function TestSDK() {
       }
     };
 
-    runTest(); // Trigger the test on load
+    runTest(); // Run the test when the component mounts
   }, []);
 
   return (
