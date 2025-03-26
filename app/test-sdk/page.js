@@ -1,46 +1,46 @@
-"use client"; // Ensures this runs only on the client-side
+"use client"; // Enforces the client-side environment
 
-import { useEffect, useState } from "react";
-import { createHttpClient } from "@gel/vercel-ai-provider"; // Correctly using `createHttpClient`
+import { useState, useEffect } from "react";
+import { createHttpClient } from "@gel/vercel-ai-provider"; // Use createHttpClient for browser-friendly SDK calls
 
-export default function TestSDK() {
-  const [response, setResponse] = useState(null); // Stores API response
-  const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState(null); // Captures errors
+export default function TestSDKPage() {
+  const [response, setResponse] = useState(null); // Stores AI response
+  const [loading, setLoading] = useState(false); // For loading state
+  const [error, setError] = useState(null); // For capturing errors
 
+  // Runs when the component first mounts
   useEffect(() => {
-    const runTest = async () => {
+    const fetchData = async () => {
       setLoading(true);
 
-      // Use `createHttpClient` with proper API key
+      // Initialize createHttpClient
       const client = createHttpClient({
-        apiKey: process.env.NEXT_PUBLIC_GEL_API_KEY, // Ensure it's in the environment variables
+        apiKey: process.env.NEXT_PUBLIC_GEL_API_KEY, // Client-safe API key
         model: "anthropic",
       });
 
       try {
-        const result = await client.generateText({
-          prompt: "What is the capital of France?",
-        });
-        setResponse(result); // Store the AI's response
+        // Call the AI API
+        const result = await client.generateText({ prompt: "What is the capital of France?" });
         console.log("AI Response:", result);
-      } catch (err) {
-        console.error("Error:", err);
-        setError(err.message);
+        setResponse(result); // Set the response
+      } catch (error) {
+        console.error("Error:", error);
+        setError(error.message || "An unknown error occurred.");
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop loading
       }
     };
 
-    runTest(); // Run the test when the component mounts
+    fetchData();
   }, []);
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>Test SDK</h1>
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
-      {response && <p>Response: {JSON.stringify(response)}</p>}
+      {loading && <p>Loading...</p>} {/* Show loading state */}
+      {error && <p style={{ color: "red" }}>Error: {error}</p>} {/* Show error message */}
+      {response && <p>Response: {JSON.stringify(response)}</p>} {/* Show AI's response */}
     </div>
   );
 }
