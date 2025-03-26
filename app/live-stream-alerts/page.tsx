@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import contentService from '../utils/contentService';
+import supabaseClient from '../utils/supabaseClient'; // Fixed import
+
 
 export default function LiveStreamAlerts() {
   const [streams, setStreams] = useState([]);
