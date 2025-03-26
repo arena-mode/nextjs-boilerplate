@@ -1,46 +1,58 @@
-"use client"; // Enforces the client-side environment
+// app/test-sdk/page.js
+'use client';
 
-import { useState, useEffect } from "react";
-import { createHttpClient } from "@gel/vercel-ai-provider"; // Use createHttpClient for browser-friendly SDK calls
+import { useState, useEffect } from 'react';
+import { createGel } from '@gel/vercel-ai-provider'; // Changed from createHttpClient to createGel
 
 export default function TestSDKPage() {
-  const [response, setResponse] = useState(null); // Stores AI response
-  const [loading, setLoading] = useState(false); // For loading state
-  const [error, setError] = useState(null); // For capturing errors
+  const [result, setResult] = useState('Testing SDK...');
+  const [error, setError] = useState(null);
 
-  // Runs when the component first mounts
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-
-      // Initialize createHttpClient
-      const client = createHttpClient({
-        apiKey: process.env.NEXT_PUBLIC_GEL_API_KEY, // Client-safe API key
-        model: "anthropic",
-      });
-
+    async function testSDK() {
       try {
-        // Call the AI API
-        const result = await client.generateText({ prompt: "What is the capital of France?" });
-        console.log("AI Response:", result);
-        setResponse(result); // Set the response
-      } catch (error) {
-        console.error("Error:", error);
-        setError(error.message || "An unknown error occurred.");
-      } finally {
-        setLoading(false); // Stop loading
+        const apiKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
+        
+        if (!apiKey) {
+          throw new Error('API key is not set in environment variables');
+        }
+        
+        // Use createGel instead of createHttpClient
+        const client = createGel({
+          apiKey
+        });
+        
+        // Test simple generation
+        const response = await client.generate({
+          model: 'claude-3-opus-20240229',
+          prompt: 'Hello, world!',
+          maxTokens: 100,
+        });
+        
+        setResult(JSON.stringify(response, null, 2));
+      } catch (err) {
+        console.error('Error testing SDK:', err);
+        setError(err.message || String(err));
       }
-    };
+    }
 
-    fetchData();
+    testSDK();
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Test SDK</h1>
-      {loading && <p>Loading...</p>} {/* Show loading state */}
-      {error && <p style={{ color: "red" }}>Error: {error}</p>} {/* Show error message */}
-      {response && <p>Response: {JSON.stringify(response)}</p>} {/* Show AI's response */}
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">SDK Test Page</h1>
+      
+      {error ? (
+        <div className="p-4 bg-red-100 text-red-700 rounded">
+          <h2 className="font-bold">Error:</h2>
+          <p>{error}</p>
+        </div>
+      ) : (
+        <pre className="p-4 bg-gray-100 rounded overflow-auto">
+          {result}
+        </pre>
+      )}
     </div>
   );
 }
