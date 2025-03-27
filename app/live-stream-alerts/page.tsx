@@ -2,21 +2,33 @@
 
 import { useState, useEffect } from 'react';
 import contentService from '../utils/contentService';
-import supabaseClient from '../utils/supabaseClient'; // Fixed import
+import supabaseClient from '../utils/supabaseClient';
 
+// Define interfaces for type safety
+interface Stream {
+  id: string;
+  title: string;
+  body: string;
+  media_url?: string;
+  created_at: string;
+}
+
+interface ContentResponse {
+  data: Stream[] | null;
+  error: Error | null;
+}
 
 export default function LiveStreamAlerts() {
-  const [streams, setStreams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userTier] = useState('free'); // Replace with actual user tier from auth context
+  const [streams, setStreams] = useState<Stream[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userTier] = useState<string>('free');
 
   useEffect(() => {
     async function fetchStreams() {
       try {
         setLoading(true);
-        // Use the contentService to fetch live stream alerts for the current user's tier
-        const { data, error } = await contentService.getContentByTabAndTier('live-stream-alerts', userTier);
+        const { data, error }: ContentResponse = await contentService.getContentByTabAndTier('live-stream-alerts', userTier);
         
         console.log('Live stream alerts data:', data);
         
@@ -25,19 +37,17 @@ export default function LiveStreamAlerts() {
         }
         
         setStreams(data || []);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error fetching live stream alerts:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
-
     fetchStreams();
   }, [userTier]);
 
-  // Helper to extract YouTube video ID
-  const getYoutubeId = (url) => {
+  const getYoutubeId = (url: string): string | null => {
     if (!url) return null;
     
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -46,8 +56,7 @@ export default function LiveStreamAlerts() {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  // Format time like X (Twitter)
-  const formatTime = (dateString) => {
+  const formatTime = (dateString: string): string => {
     if (!dateString) return '';
     
     const date = new Date(dateString);
@@ -55,14 +64,12 @@ export default function LiveStreamAlerts() {
     const isToday = date.toDateString() === now.toDateString();
     
     if (isToday) {
-      // Format as time for today's posts (e.g., "9:54pm")
       return date.toLocaleTimeString('en-US', { 
         hour: 'numeric', 
         minute: '2-digit',
         hour12: true 
       });
     } else {
-      // Format as "Mar 22" for older posts
       return date.toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric' 
@@ -86,10 +93,9 @@ export default function LiveStreamAlerts() {
         <p className="p-4">No upcoming streams yet.</p>
       ) : (
         <div>
-          {streams.map((stream) => (
+          {streams.map((stream: Stream) => (
             <div key={stream.id} className="border-b border-gray-800">
               <div className="p-4">
-                {/* Title and timestamp in same row */}
                 <div className="flex justify-between items-center mb-2">
                   <h2 className="text-xl font-bold">{stream.title}</h2>
                   <span className="text-gray-400 text-sm">
