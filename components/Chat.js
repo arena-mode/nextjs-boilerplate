@@ -13,20 +13,22 @@ export default function Chat() {
       {/* Messages display area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
-          <div 
-            key={message.id} 
+          <div
+            key={message.id}
             className={`p-3 rounded-lg ${
-              message.role === 'user' 
-                ? 'bg-blue-100 ml-auto max-w-[80%]' 
-                : 'bg-gray-100 max-w-[80%]'
+              message.role === 'user'
+                ? 'bg-blue-900 text-white ml-auto max-w-[80%]'
+                : 'bg-gray-800 text-white max-w-[80%]'
             }`}
           >
             <p className="whitespace-pre-wrap">{message.content}</p>
           </div>
         ))}
-        {isLoading && <div className="bg-gray-100 p-3 rounded-lg max-w-[80%]">Claude is thinking...</div>}
+        {isLoading && (
+          <div className="bg-gray-100 p-3 rounded-lg max-w-[80%]">Claude is thinking...</div>
+        )}
       </div>
-      
+
       {/* Input form */}
       <form onSubmit={handleSubmit} className="border-t p-4">
         <div className="flex space-x-4">
@@ -37,8 +39,8 @@ export default function Chat() {
             placeholder="Ask something..."
             disabled={isLoading}
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isLoading || !input.trim()}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
           >
