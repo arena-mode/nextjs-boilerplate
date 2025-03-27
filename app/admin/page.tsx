@@ -3,20 +3,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
 
-// Debug logs
-console.log('ENV:', {
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-});
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Admin() {
-  // User states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -24,7 +16,6 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Notification states
   const [notifications, setNotifications] = useState({
     liveStreamAlerts: false,
     cryptoMarket: false,
@@ -39,8 +30,7 @@ export default function Admin() {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (session) {
           setIsAuthenticated(true);
-          // Check if admin
-          if (session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+          if (session.user.email === 'admin@cryptobellwether.com') {
             setIsAdmin(true);
           }
         }
@@ -70,10 +60,10 @@ export default function Admin() {
   };
 
   const handleAdminLogin = async () => {
-    if (adminPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+    if (adminPassword === 'your-admin-password') {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: process.env.NEXT_PUBLIC_ADMIN_EMAIL!,
+          email: 'admin@cryptobellwether.com',
           password: adminPassword
         });
         if (error) throw error;
@@ -159,7 +149,6 @@ export default function Admin() {
     );
   }
 
-  // Regular user view with notification toggles
   if (isAuthenticated && !isAdmin) {
     return (
       <div className="min-h-screen bg-black">
@@ -201,7 +190,6 @@ export default function Admin() {
     );
   }
 
-  // Admin view
   return (
     <div className="min-h-screen bg-black">
       <div className="max-w-md mx-auto p-6">
@@ -215,7 +203,6 @@ export default function Admin() {
           </button>
         </div>
         
-        {/* Add your admin dashboard content here */}
         <div className="bg-[#1a1a1a] p-4 rounded">
           <p>Welcome to the admin dashboard</p>
         </div>
