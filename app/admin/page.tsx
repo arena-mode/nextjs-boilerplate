@@ -1,150 +1,157 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
-import supabaseClient from '../utils/supabaseClient.js';
-import contentService from '../utils/contentService';
-import ContentManagement from './content-management';
 
-export default function Admin() {
+import { useState, useEffect } from 'react';
+import supabaseClient from '../utils/supabaseClient.js';
+
+export default function Auth() {
+  // User Auth States
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userTier, setUserTier] = useState('free');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('add'); // 'add' or 'manage'
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [tab, setTab] = useState('live-stream-alerts');
-  const [tier, setTier] = useState('free');
-  const [notified, setNotified] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const fileInputRef = useRef(null);
 
-  // Check if user is already authenticated on page load
+  // Notification Toggle States
+  const [notifications, setNotifications] = useState({
+    liveStreamAlerts: false,
+    cryptoMarket: false,
+    videos: false,
+    posts: false,
+    walletAlerts: false
+  });
+
+  // Admin States
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+
   useEffect(() => {
-    // Debug the supabase client directly
-    console.log('Direct supabase import in admin page:', supabaseClient);
-    console.log('Auth available in admin page:', supabaseClient.auth ? 'Yes' : 'No');
-    
-    const checkSession = async () => {
-      try {
-        console.log('About to check session with:', supabaseClient);
-        if (!supabaseClient.auth) {
-          console.error('Auth is not available on the client');
-          setLoading(false);
-          return;
-        }
-        
-        const { data, error } = await supabaseClient.auth.getSession();
-        console.log('Session check result:', { data, error });
-        
-        if (data?.session) {
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     checkSession();
   }, []);
 
-  const handleLogin = async () => {
-    if (password !== 'CryptoBellwether') {
-      alert('Incorrect password');
-      return;
+  const checkSession = async () => {
+    try {
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+      if (session) {
+        const { user } = session;
+        setIsAuthenticated(true);
+        // Check if user is admin
+        if (user.email === 'admin@cryptobellwether.com') {
+          setIsAdmin(true);
+        }
+        // Get user tier from metadata or profile
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('tier')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserTier(profile.tier);
+        }
+        // Get saved notification preferences
+        const { data: prefs } = await supabaseClient
+          .from('notification_preferences')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (prefs) {
+          setNotifications(prefs.preferences);
+        }
+      }
+    } catch (error) {
+      console.error('Session check error:', error);
+    } finally {
+      setLoading(false);
     }
-    
+  };
+
+  const handleUserLogin = async (e) => {
+    e.preventDefault();
     try {
       const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: 'admin@cryptobellwether.com',
-        password: 'CryptoBellwether',
+        email,
+        password
       });
       
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
       
       setIsAuthenticated(true);
+      if (data.user.email === 'admin@cryptobellwether.com') {
+        setIsAdmin(true);
+      }
+      checkSession(); // Get user tier and preferences
     } catch (error) {
       console.error('Login error:', error);
       alert('Login failed: ' + error.message);
     }
   };
 
-  const handleLogout = async () => {
-    if (confirm('Are you sure you want to log out?')) {
-      try {
-        await supabaseClient.auth.signOut();
-        setIsAuthenticated(false);
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
+  const handleAdminLogin = async () => {
+    if (adminPassword !== 'CryptoBellwether') {
+      alert('Incorrect admin password');
+      return;
     }
-  };
-
-  const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    setUploadingImage(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: 'admin@cryptobellwether.com',
+        password: 'CryptoBellwether',
+      });
       
-      const { error: uploadError } = await supabaseClient.storage
-        .from('images')
-        .upload(filePath, file);
-        
-      if (uploadError) throw uploadError;
-      
-      // Get public URL
-      const { data } = supabaseClient.storage
-        .from('images')
-        .getPublicUrl(filePath);
-        
-      setMediaUrl(data.publicUrl);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Failed to upload image');
-    } finally {
-      setUploadingImage(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      // Use the contentService to add content
-      const { error } = await contentService.addContent({ 
-        title, 
-        body, 
-        media_url: mediaUrl,
-        tab,
-        tier,
-        notified: notified,
-        send_notification: notified
-      }, notified);
-        
       if (error) throw error;
       
-      setMessage('Content posted successfully!');
-      setTitle('');
-      setBody('');
-      setMediaUrl('');
-      setTab('live-stream-alerts');
-      setTier('free');
-      setNotified(false);
+      setIsAdmin(true);
+      setIsAuthenticated(true);
     } catch (error) {
-      setMessage('Error posting content');
-      console.error('Error adding content:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Admin login error:', error);
+      alert('Admin login failed: ' + error.message);
+    }
+  };
+
+  const handleToggle = async (feature) => {
+    // Check if feature is available for user's tier
+    if (feature === 'walletAlerts' && userTier === 'free') {
+      alert('Upgrade to access Wallet Alerts');
+      return;
+    }
+
+    const updatedNotifications = {
+      ...notifications,
+      [feature]: !notifications[feature]
+    };
+
+    setNotifications(updatedNotifications);
+
+    try {
+      const { error } = await supabaseClient
+        .from('notification_preferences')
+        .upsert({
+          user_id: (await supabaseClient.auth.getUser()).data.user.id,
+          preferences: updatedNotifications
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      // Revert toggle if save failed
+      setNotifications(notifications);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+      setNotifications({
+        liveStreamAlerts: false,
+        cryptoMarket: false,
+        videos: false,
+        posts: false,
+        walletAlerts: false
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -152,181 +159,108 @@ export default function Admin() {
     return <div className="p-4">Loading...</div>;
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold">Admin Login</h1>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="p-2 border rounded"
-          placeholder="Enter password"
-        />
-        <button 
-          onClick={handleLogin}
-          className="ml-2 p-2 bg-gray-800 text-white rounded"
-        >
-          Login
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      
-      {/* Tabs */}
-      <div className="flex mb-6 border-b border-gray-700">
-        <button
-          className={`px-4 py-2 mr-2 ${
-            activeTab === 'add'
-              ? 'border-b-2 border-blue-500 text-blue-500'
-              : 'text-gray-400 hover:text-gray-300'
-          }`}
-          onClick={() => setActiveTab('add')}
-        >
-          Add Content
-        </button>
-        <button
-          className={`px-4 py-2 ${
-            activeTab === 'manage'
-              ? 'border-b-2 border-blue-500 text-blue-500'
-              : 'text-gray-400 hover:text-gray-300'
-          }`}
-          onClick={() => setActiveTab('manage')}
-        >
-          Manage Content
-        </button>
-      </div>
-      
-      {activeTab === 'add' ? (
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block">Select Tab</label>
-            <select 
-              value={tab} 
-              onChange={(e) => setTab(e.target.value)}
-              className="p-2 border rounded w-full bg-gray-800 text-white"
-              style={{ fontSize: '16px' }}
-            >
-              <option value="live-stream-alerts" className="text-base py-2">Live Stream Alerts</option>
-              <option value="crypto-market" className="text-base py-2">Crypto Market</option>
-              <option value="videos" className="text-base py-2">Videos</option>
-              <option value="posts" className="text-base py-2">Posts</option>
-              <option value="wallet-alerts" className="text-base py-2">Wallet Alerts</option>
-              <option value="shorting" className="text-base py-2">Shorting</option>
-              <option value="cb-course" className="text-base py-2">CB Course</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block">Access Tier</label>
-            <select 
-              value={tier} 
-              onChange={(e) => setTier(e.target.value)}
-              className="p-2 border rounded w-full bg-gray-800 text-white"
-              style={{ fontSize: '16px' }}
-            >
-              <option value="free" className="text-base py-2">Free</option>
-              <option value="inner-circle" className="text-base py-2">Inner Circle</option>
-              <option value="shorting" className="text-base py-2">Shorting</option>
-              <option value="cb-course" className="text-base py-2">CB Course</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block">Title</label>
-            <input 
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="p-2 border rounded w-full"
-              required
+    <div className="max-w-md mx-auto p-6">
+      {!isAuthenticated ? (
+        // User Login Form
+        <div className="space-y-4">
+          <form onSubmit={handleUserLogin} className="space-y-4">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full p-2 bg-[#1a1a1a] border border-gray-700 rounded"
             />
-          </div>
-          
-          <div className="mb-4">
-            <label className="block">Content</label>
-            <textarea 
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              className="p-2 border rounded w-full h-32"
-              required
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full p-2 bg-[#1a1a1a] border border-gray-700 rounded"
             />
+            <button 
+              type="submit"
+              className="w-full p-2 bg-[#2c2c2c] hover:bg-[#3c3c3c] rounded"
+            >
+              Sign In
+            </button>
+          </form>
+        </div>
+      ) : isAdmin ? (
+        // Admin Dashboard (your existing admin content)
+        <div>
+          {/* Keep your existing admin dashboard code here */}
+        </div>
+      ) : (
+        // User Notification Settings
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-medium">Notification Settings</h2>
+            <span className="text-sm bg-[#2c2c2c] px-3 py-1 rounded">
+              {userTier.toUpperCase()}
+            </span>
           </div>
-          
-          <div className="mb-4">
-            <label className="block">Media</label>
-            <div className="flex space-x-2">
-              <input 
-                type="text"
-                value={mediaUrl}
-                onChange={(e) => setMediaUrl(e.target.value)}
-                placeholder="URL or upload/paste an image"
-                className="p-2 border rounded flex-grow"
-              />
-              <button 
-                type="button" 
-                onClick={() => fileInputRef.current.click()}
-                className="p-2 bg-gray-700 text-white rounded"
-                disabled={uploadingImage}
-              >
-                {uploadingImage ? "Uploading..." : "Browse"}
-              </button>
-              <input 
-                ref={fileInputRef}
-                type="file" 
-                accept="image/*" 
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-            </div>
-            {mediaUrl && (
-              <div className="mt-2">
-                <img src={mediaUrl} alt="Preview" className="h-20 object-contain" />
+
+          {Object.entries(notifications).map(([key, value]) => (
+            <div key={key} 
+              className={`flex items-center justify-between p-3 ${
+                key === 'walletAlerts' && userTier === 'free'
+                  ? 'bg-[#1a1a1a] opacity-75'
+                  : 'bg-[#1a1a1a]'
+              } rounded`}
+            >
+              <div>
+                <h3 className="font-medium">
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </h3>
+                {key === 'walletAlerts' && userTier === 'free' && (
+                  <span className="text-sm text-gray-400">
+                    Upgrade to enable
+                  </span>
+                )}
               </div>
-            )}
-            <p className="text-sm mt-1 text-gray-500">Enter a URL or upload an image</p>
-          </div>
-          
-          <div className="mb-4">
-            <label className="flex items-center">
-              <input 
-                type="checkbox"
-                checked={notified}
-                onChange={(e) => setNotified(e.target.checked)}
-                className="mr-2"
-              />
-              Send notification
-            </label>
-          </div>
-          
-          <button 
-            type="submit" 
-            className="p-2 bg-gray-800 text-white rounded w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Posting...' : 'Post Content'}
-          </button>
-          
-          {message && (
-            <div className="mt-4 p-2 bg-gray-700 text-white rounded">
-              {message}
+              <button
+                className={`w-12 h-6 rounded-full transition-colors ${
+                  value && (key !== 'walletAlerts' || userTier !== 'free')
+                    ? 'bg-blue-600' 
+                    : 'bg-gray-600'
+                }`}
+                disabled={key === 'walletAlerts' && userTier === 'free'}
+                onClick={() => handleToggle(key)}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white transform transition-transform ${
+                  value ? 'translate-x-7' : 'translate-x-1'
+                }`} />
+              </button>
             </div>
-          )}
-          
+          ))}
+
           <button 
-            type="button"
+            className="w-full p-2 mt-8 bg-[#2c2c2c] hover:bg-[#3c3c3c] rounded"
             onClick={handleLogout}
-            className="mt-8 p-2 bg-gray-700 text-white rounded w-full"
           >
             Logout
           </button>
-        </form>
-      ) : (
-        <ContentManagement />
+        </div>
+      )}
+
+      {/* Admin Login (small and subtle) */}
+      {!isAuthenticated && (
+        <div className="mt-8 text-left">
+          <button
+            onClick={() => {
+              const pwd = prompt('Enter admin password');
+              if (pwd) {
+                setAdminPassword(pwd);
+                handleAdminLogin();
+              }
+            }}
+            className="text-sm text-gray-400 hover:text-gray-300"
+          >
+            Admin
+          </button>
+        </div>
       )}
     </div>
   );
