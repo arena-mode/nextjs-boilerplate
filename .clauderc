@@ -1,0 +1,10 @@
+{
+  "formatting": {
+    "typescript": true,
+    "lintOnSave": true
+  },
+  "analysis": {
+    "scanDependencies": true,
+    "suggestRefactors": true
+  }
+}

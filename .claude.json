@@ -1,0 +1,7 @@
+{
+  "github": {
+    "repository": "arena-mode/nextjs-boilerplate",
+    "branch": "369"
+  },
+  "allowedTools": ["git", "npm", "node"]
+}
