@@ -8,3 +8,4 @@ export const TestComponent = ({ name }: { name: string }) => {
     </div>
   );
 };
+// Additional test comment
