@@ -15,7 +15,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 // Avoid hardcoding keys, always rely on environment variables
-const supabaseClient = createClient(supabaseUrl!, supabaseKey!, {
+const supabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
