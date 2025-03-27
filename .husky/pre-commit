@@ -1,7 +1,6 @@
-#\!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#\!/bin/sh
 
-# Run Prettier on staged files
+# Format staged files with Prettier
 FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|ts|tsx|json|md)$')
 if [ -n "$FILES" ]; then
   echo "Formatting staged files with Prettier..."
