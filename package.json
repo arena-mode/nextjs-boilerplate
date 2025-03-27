@@ -9,19 +9,6 @@
     "lint": "next lint",
     "prepare": "husky install"
   },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
-  },
   "dependencies": {
     "next": "14.2.3",
     "react": "18.2.0",
