@@ -3,3 +3,4 @@ const test = 'hello';
 // Another comment
 // Third comment
 // Test comment
+// Testing pre-commit hook with direct commands

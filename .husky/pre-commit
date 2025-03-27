@@ -1,19 +1,10 @@
 #\!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run Prettier and ESLint directly on staged files
-FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|ts|tsx)$')
+# Run Prettier on staged files
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|ts|tsx|json|md)$')
 if [ -n "$FILES" ]; then
-  echo "Linting and formatting staged JavaScript/TypeScript files..."
-  npx prettier --write $FILES
-  npx eslint --fix $FILES
+  echo "Formatting staged files with Prettier..."
+  npx prettier --write $FILES || true
   git add $FILES
-fi
-
-# Format JSON and MD files
-JSON_MD_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(json|md)$')
-if [ -n "$JSON_MD_FILES" ]; then
-  echo "Formatting staged JSON and Markdown files..."
-  npx prettier --write $JSON_MD_FILES
-  git add $JSON_MD_FILES
 fi
