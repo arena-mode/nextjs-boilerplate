@@ -5,8 +5,10 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
-
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+const ADMIN_EMAIL = 'cryptobellwether@protonmail.com';
+const ADMIN_PASSWORD = 'Crypt0B3llw3th3r';
 
 export default function Admin() {
   const [email, setEmail] = useState('');
@@ -29,7 +31,7 @@ export default function Admin() {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (session) {
           setIsAuthenticated(true);
-          if (session.user.email === 'admin@cryptobellwether.com') {
+          if (session.user.email === ADMIN_EMAIL) {
             setIsAdmin(true);
           }
           
@@ -69,21 +71,28 @@ export default function Admin() {
   };
 
   const handleAdminLogin = async () => {
-    if (adminPassword === 'Crypt0B3llw3th3r') {  // Updated password with '0' instead of 'o'
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: 'admin@cryptobellwether.com',
-          password: adminPassword
-        });
-        if (error) throw error;
-        setIsAuthenticated(true);
-        setIsAdmin(true);
-      } catch (error) {
-        console.error('Admin login error:', error);
+    if (adminPassword !== ADMIN_PASSWORD) {
+      alert('Incorrect admin password');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: adminPassword
+      });
+      
+      if (error) throw error;
+      
+      setIsAuthenticated(true);
+      setIsAdmin(true);
+    } catch (error: any) {
+      console.error('Admin login error:', error);
+      if (error?.message) {
+        alert(error.message);
+      } else {
         alert('Admin login failed');
       }
-    } else {
-      alert('Incorrect admin password');
     }
   };
 
