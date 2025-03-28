@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+const ADMIN_EMAIL = 'admin@cryptobellwether.com';
+const ADMIN_PASSWORD = 'CryptoB3llw3th3r';
 
 export default function Admin() {
   const [email, setEmail] = useState('');
@@ -15,7 +18,6 @@ export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-
   const [notifications, setNotifications] = useState({
     liveStreamAlerts: false,
     cryptoMarket: false,
@@ -30,8 +32,19 @@ export default function Admin() {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (session) {
           setIsAuthenticated(true);
-          if (session.user.email === 'admin@cryptobellwether.com') {
+          if (session.user.email === ADMIN_EMAIL) {
             setIsAdmin(true);
+          }
+          
+          // Load saved notification preferences
+          const { data: prefs } = await supabase
+            .from('user_preferences')
+            .select('notifications')
+            .eq('user_id', session.user.id)
+            .single();
+            
+          if (prefs?.notifications) {
+            setNotifications(prefs.notifications);
           }
         }
       } catch (error) {
@@ -60,10 +73,10 @@ export default function Admin() {
   };
 
   const handleAdminLogin = async () => {
-    if (adminPassword === 'your-admin-password') {
+    if (adminPassword === ADMIN_PASSWORD) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: 'admin@cryptobellwether.com',
+          email: ADMIN_EMAIL,
           password: adminPassword
         });
         if (error) throw error;
@@ -84,11 +97,32 @@ export default function Admin() {
     setIsAdmin(false);
   };
 
-  const handleNotificationToggle = (key: string) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: !prev[key as keyof typeof notifications]
-    }));
+  const handleNotificationToggle = async (key: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const newNotifications = {
+        ...notifications,
+        [key]: !notifications[key as keyof typeof notifications]
+      };
+      
+      setNotifications(newNotifications);
+
+      // Save to Supabase
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: user.id,
+          notifications: newNotifications
+        });
+
+      if (error) throw error;
+
+    } catch (error) {
+      console.error('Error saving notification preferences:', error);
+      alert('Failed to save preference');
+    }
   };
 
   if (loading) {
