@@ -8,9 +8,6 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const ADMIN_EMAIL = 'cryptobellwether@protonmail.com';
-const ADMIN_PASSWORD = 'Crypt0B3llw3th3r';
-
 export default function Admin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,11 +29,10 @@ export default function Admin() {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (session) {
           setIsAuthenticated(true);
-          if (session.user.email === ADMIN_EMAIL) {
+          if (session.user.email === 'admin@cryptobellwether.com') {
             setIsAdmin(true);
           }
           
-          // Load saved notification preferences
           const { data: prefs } = await supabase
             .from('user_preferences')
             .select('notifications')
@@ -73,10 +69,10 @@ export default function Admin() {
   };
 
   const handleAdminLogin = async () => {
-    if (adminPassword === ADMIN_PASSWORD) {
+    if (adminPassword === 'Crypt0B3llw3th3r') {  // Updated password with '0' instead of 'o'
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: ADMIN_EMAIL,
+          email: 'admin@cryptobellwether.com',
           password: adminPassword
         });
         if (error) throw error;
@@ -109,7 +105,6 @@ export default function Admin() {
       
       setNotifications(newNotifications);
 
-      // Save to Supabase
       const { error } = await supabase
         .from('user_preferences')
         .upsert({
