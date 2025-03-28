@@ -1,30 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import ContentManagement from './content-management';
 
-const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-const ADMIN_EMAIL = 'cryptobellwether@protonmail.com';
-const ADMIN_PASSWORD = 'Crypt0B3llw3th3r';
-
 export default function Admin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState({
-    liveStreamAlerts: false,
-    cryptoMarket: false,
-    videos: false,
-    posts: false,
-    walletAlerts: false
-  });
+  // Directly return the ContentManagement component without auth checks
+  return <ContentManagement />;
+}
 
   useEffect(() => {
     const checkSession = async () => {
