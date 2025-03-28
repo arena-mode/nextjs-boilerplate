@@ -8,7 +8,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const ADMIN_EMAIL = 'admin@cryptobellwether.com';
+const ADMIN_EMAIL = 'cryptobellwether@protonmail.com';
 const ADMIN_PASSWORD = 'CryptoB3llw3th3r';
 
 export default function Admin() {
