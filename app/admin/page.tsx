@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import ContentManagement from './content-management';
 
+// Supabase Initialization
 const supabaseUrl = 'https://sosrdqwwmyzvnspfmyjd.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvc3JkcXd3bXl6dm5zcGZteWpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2NjIwMTAsImV4cCI6MjA1ODIzODAxMH0.3AQ3bXJh-KDw7KMlsLQAm5hkaYJultt3HX4febYhrAQ';
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function Admin() {
+  // States
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState({
     liveStreamAlerts: false,
     cryptoMarket: false,
@@ -22,25 +23,40 @@ export default function Admin() {
     posts: false,
     walletAlerts: false
   });
+  const [loading, setLoading] = useState(true);
 
+  // States for the Admin Panel (Code 3)
+  const [activeTab, setActiveTab] = useState('add'); // 'add' or 'manage'
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [tab, setTab] = useState('live-stream-alerts');
+  const [tier, setTier] = useState('free');
+  const [notified, setNotified] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Session Check on Load
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: session } = await supabase.auth.getSession();
         if (session) {
           setIsAuthenticated(true);
           if (session.user.email === 'admin@cryptobellwether.com') {
             setIsAdmin(true);
-          }
-          
-          const { data: prefs } = await supabase
-            .from('user_preferences')
-            .select('notifications')
-            .eq('user_id', session.user.id)
-            .single();
-            
-          if (prefs?.notifications) {
-            setNotifications(prefs.notifications);
+          } else {
+            // Fetch user preferences
+            const { data: prefs } = await supabase
+              .from('user_preferences')
+              .select('notifications')
+              .eq('user_id', session.user.id)
+              .single();
+            if (prefs?.notifications) {
+              setNotifications(prefs.notifications);
+            }
           }
         }
       } catch (error) {
@@ -52,6 +68,7 @@ export default function Admin() {
     checkSession();
   }, []);
 
+  // User Login
   const handleUserLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -61,15 +78,15 @@ export default function Admin() {
       });
       if (error) throw error;
       setIsAuthenticated(true);
-      setIsAdmin(false);
     } catch (error) {
       console.error('Login error:', error);
       alert('Login failed');
     }
   };
 
+  // Admin Login
   const handleAdminLogin = async () => {
-    if (adminPassword === 'Crypt0B3llw3th3r') {  // Updated password with '0' instead of 'o'
+    if (adminPassword === 'Crypt0B3llw3th3r') {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: 'admin@cryptobellwether.com',
@@ -87,155 +104,165 @@ export default function Admin() {
     }
   };
 
+  // Logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setIsAdmin(false);
   };
 
+  // User Notification Toggle
   const handleNotificationToggle = async (key: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await supabase.auth.getUser();
       if (!user) return;
-
       const newNotifications = {
         ...notifications,
         [key]: !notifications[key as keyof typeof notifications]
       };
-      
       setNotifications(newNotifications);
-
       const { error } = await supabase
         .from('user_preferences')
         .upsert({
           user_id: user.id,
           notifications: newNotifications
         });
-
       if (error) throw error;
-
     } catch (error) {
       console.error('Error saving notification preferences:', error);
       alert('Failed to save preference');
     }
   };
 
+  // Admin Panel - File Upload
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+      setMediaUrl(data.publicUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Admin Panel - Submit Content
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      // Replace with actual backend logic for posting content
+      const { error } = await supabase
+        .from('content')
+        .insert([
+          {
+            title,
+            body,
+            media_url: mediaUrl,
+            tab,
+            tier,
+            notified,
+            send_notification: notified
+          }
+        ]);
+      if (error) throw error;
+      setMessage('Content posted successfully!');
+      setTitle('');
+      setBody('');
+      setMediaUrl('');
+      setTab('live-stream-alerts');
+      setTier('free');
+      setNotified(false);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage('Error posting content');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Loading State
   if (loading) {
-    return <div className="min-h-screen bg-black flex items-center justify-center">Loading...</div>;
+    return <div>Loading...</div>;
   }
 
+  // Admin Login Page
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="max-w-md mx-auto p-6">
-          <h2 className="text-xl mb-6">User Login</h2>
-          
-          <form onSubmit={handleUserLogin} className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              className="w-full p-2 bg-[#1a1a1a] border border-gray-700 rounded"
-            />
-            
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full p-2 bg-[#1a1a1a] border border-gray-700 rounded"
-            />
-            
-            <button 
-              type="submit"
-              className="w-full p-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded"
-            >
-              Sign In
-            </button>
-          </form>
-
-          <div className="mt-8">
-            <h3 className="text-sm text-gray-400 mb-2">Admin Access</h3>
-            <div className="flex gap-2">
-              <input
-                type="password"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Admin password"
-                className="flex-1 p-2 bg-[#1a1a1a] border border-gray-700 rounded"
-              />
-              <button 
-                onClick={handleAdminLogin}
-                className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded"
-              >
-                Admin Login
-              </button>
-            </div>
-          </div>
+      <div>
+        <h1>Admin/User Login</h1>
+        <form onSubmit={handleUserLogin}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="User Email"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="User Password"
+          />
+          <button type="submit">Sign In</button>
+        </form>
+        <div>
+          <input
+            type="password"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            placeholder="Admin Password"
+          />
+          <button onClick={handleAdminLogin}>Admin Login</button>
         </div>
       </div>
     );
   }
 
+  // User's Notification Settings Page
   if (isAuthenticated && !isAdmin) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="max-w-md mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl">Notification Settings</h2>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded"
-            >
-              Logout
-            </button>
+      <div>
+        <h1>Notification Settings</h1>
+        {Object.keys(notifications).map((key) => (
+          <div key={key}>
+            <span>{key}</span>
+            <button onClick={() => handleNotificationToggle(key)}>{notifications[key] ? 'ON' : 'OFF'}</button>
           </div>
-
-          <div className="space-y-4">
-            {Object.entries(notifications).map(([key, value]) => (
-              <div 
-                key={key}
-                className="flex items-center justify-between p-3 bg-[#1a1a1a] rounded"
-              >
-                <span>{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                <button
-                  onClick={() => handleNotificationToggle(key)}
-                  className={`w-12 h-6 rounded-full relative ${
-                    value ? 'bg-blue-600' : 'bg-gray-600'
-                  }`}
-                >
-                  <div
-                    className={`absolute w-4 h-4 bg-white rounded-full transition-transform ${
-                      value ? 'translate-x-7' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
+        <button onClick={handleLogout}>Logout</button>
       </div>
     );
   }
 
+  // Admin Panel
   return (
-    <div className="min-h-screen bg-black">
-      <div className="max-w-md mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl">Admin Dashboard</h2>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded"
-          >
-            Logout
-          </button>
-        </div>
-        
-        <div className="bg-[#1a1a1a] p-4 rounded">
-          <p>Welcome to the admin dashboard</p>
-        </div>
-      </div>
+    <div>
+      <ContentManagement
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        title={title}
+        setTitle={setTitle}
+        handleFileSelect={handleFileSelect}
+        handleSubmit={handleSubmit}
+        // Other props
+      />
     </div>
   );
 }
